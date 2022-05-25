@@ -3,29 +3,9 @@
 #include<math.h>
 #include<WiFi.h>
 #include<WiFiUdp.h>
-#include "UAVmacros.h"
+#include "Macros.h"
 #include "Sbus.h"
-HardwareSerial UART2(2);
-
-// EPS32, 9軸センサ, 動作確認用サーボ
-#define MPU6050 0x68
-#define Airspeed3 0x0C //x
-#define Airspeed2 0x0B //y
-#define Airspeed1 0x0A //z
-
-#define PI 3.14159265358979
-
-//IMU()
-uint8_t Buf[25];
-
-int16_t A_x_sen,A_y_sen,A_z_sen;
-double AX,AY,AZ;
-double AXave,AYave,AZave;
-
-int16_t G_x_sen,G_y_sen,G_z_sen;
-double P,Q,R;
-double Psen,Qsen,Rsen;
-double Pave,Qave,Rave;
+#include "IMU.h"
 
 //Airspeed_sensor
 int16_t V_I2C;
@@ -159,43 +139,6 @@ const IPAddress ip(192, 168, 4, 2);       // IPアドレス(ゲートウェイ�
 const IPAddress subnet(255, 255, 255, 0); // サブネットマスク
 const char * udpAddress = "192.168.4.2";
 WiFiUDP UDP1;
-
-void I2Cread(uint8_t Address,uint8_t Register,uint8_t Byte,uint8_t* Data){
-  Wire.beginTransmission(Address);
-  Wire.write(Register);
-  Wire.endTransmission();
-  Wire.requestFrom(Address,Byte);
-  uint8_t index = 0;
-  while (Wire.available()) Data[index++] = Wire.read();
-}
-
-void I2Cwrite(uint8_t Address,uint8_t Register,uint8_t Data){
-  Wire.beginTransmission(Address);
-  Wire.write(Register);
-  Wire.write(Data);
-  Wire.endTransmission();
-}
-
-void IMU(void){
-  I2Cwrite(MPU6050,0x1C,0x18);
-  I2Cwrite(MPU6050,0x1D,0x06);
-  I2Cwrite(MPU6050,0x1B,0x10);
-  I2Cwrite(MPU6050,0x1A,0x06);
-  I2Cread(MPU6050,0x3B,14,Buf);
-  
-  A_x_sen = (Buf[0]<<8|Buf[1]);
-  A_y_sen = (Buf[2]<<8|Buf[3]);
-  A_z_sen = Buf[4]<<8|Buf[5];
-  AY = -(double)(A_x_sen*0.488*0.001);
-  AX = (double)(A_y_sen*0.488*0.001);
-  AZ = (double)(A_z_sen*0.488*0.001);
-  G_x_sen = (Buf[8]<<8|Buf[9]); 
-  G_y_sen = (Buf[10]<<8|Buf[11]); 
-  G_z_sen = Buf[12]<<8|Buf[13]; 
-  Qsen = -(double)((PI/180.0)*G_x_sen*0.03048);
-  Psen = (double)((PI/180.0)*G_y_sen*0.03048);
-  Rsen = (double)((PI/180.0)*G_z_sen*0.03048);
-}
 
 void Airspeed_sensor(void){
   I2Cread(Airspeed3,0x03,1,&Buf[1]);
@@ -584,10 +527,15 @@ void wifi()
     }
 }
 
-void setup(void){
-  Serial.begin(115200);
-  Sbus sbus1;
+// initialize sbus
+HardwareSerial UART2(2);
+Sbus sbus(UART2);
+IMU imu;
 
+void setup(void){
+
+  Serial.begin(115200);
+  
   pinMode(12, OUTPUT);
   SD.begin(5,SPI,24000000,"/sd");
 
@@ -604,24 +552,6 @@ void setup(void){
     ledcAttachPin(IN[i],CHANNEL[i]);
   }
 
-    
-  Wire.begin();
-  
-  I2Cwrite(MPU6050,27,0x10);
-  I2Cwrite(MPU6050,28,0x18);
-  I2Cwrite(MPU6050,0x37,0x02);
-  I2Cwrite(MPU6050,0x6B,0x00);
-  
-  for (i=0;i<1000;i++){
-    IMU();
-    AXave += AX/1000;
-    AYave += AY/1000;
-    AZave += AZ/1000;
-    Pave += Psen/1000;
-    Qave += Qsen/1000;
-    Rave += Rsen/1000;
-  }
-  　　
   WiFi.softAP(ssid, pass);           // SSIDとパスの設定
   delay(100);                        // 追記：このdelayを入れないと失敗する場合がある
   WiFi.softAPConfig(ip, ip, subnet); // IPアドレス、ゲートウェイ、サブネットマスクの設定
@@ -636,8 +566,8 @@ void setup(void){
 
 void loop(void){
 
-  sbus1.SbusRead(); // フタバ工業：sbus規格デジタル信号を読み込む
-  IMU();　// 9-軸センサを読み取る（6軸のみ使用）
+  sbus.SbusRead(UART2); // フタバ工業：sbus規格デジタル信号を読み込む
+  imu.IMURead(); // 9-軸センサを読み取る（6軸のみ使用）
   PSD(); // 高度制御 / 高度計
   gravity_est(); // 姿勢角？の計算
   madgwick(); // マグフィルター（姿勢角を出すための計算）

@@ -1,3 +1,4 @@
+// EPS32, 9軸センサ, 動作確認用サーボ
 #define MPU6050 0x68
 #define Airspeed3 0x0C //x
 #define Airspeed2 0x0B //y
