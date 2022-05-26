@@ -52,17 +52,17 @@ void IMU::IMURead()
     A_y_sen = (buffer[2] << 8 | buffer[3]);
     A_z_sen = buffer[4] << 8 | buffer[5];
 
-    AY = -(double)(A_x_sen * 0.488 * 0.001);
-    AX = (double)(A_y_sen * 0.488 * 0.001);
-    AZ = (double)(A_z_sen * 0.488 * 0.001);
+    AY = -(float)(A_x_sen * 0.488 * 0.001);
+    AX = (float)(A_y_sen * 0.488 * 0.001);
+    AZ = (float)(A_z_sen * 0.488 * 0.001);
 
     G_x_sen = (buffer[8] << 8 | buffer[9]);
     G_y_sen = (buffer[10] << 8 | buffer[11]);
     G_z_sen = buffer[12] << 8 | buffer[13];
 
-    Qsen = -(double)((PI / 180.0) * G_x_sen * 0.03048);
-    Psen = (double)((PI / 180.0) * G_y_sen * 0.03048);
-    Rsen = (double)((PI / 180.0) * G_z_sen * 0.03048);
+    Qsen = -(float)((PI / 180.0) * G_x_sen * 0.03048);
+    Psen = (float)((PI / 180.0) * G_y_sen * 0.03048);
+    Rsen = (float)((PI / 180.0) * G_z_sen * 0.03048);
 }
 
 // Get AX,AY,AZ

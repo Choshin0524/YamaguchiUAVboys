@@ -1,11 +1,10 @@
-#include<Wire.h>
 #include<SD.h>
 #include<math.h>
-#include<WiFi.h>
-#include<WiFiUdp.h>
 #include "Macros.h"
 #include "Sbus.h"
 #include "IMU.h"
+#include "PSD.h"
+#include "YUBWifi.h"
 
 //Airspeed_sensor
 int16_t V_I2C;
@@ -14,15 +13,6 @@ double VX,VY,VZ,V;
 double attack;
 double sideslip;
 int z=0;
-
-//PSD()
-int adc_key_in;
-double e;
-double E;
-double k = 2.4;
-double H = 0.0;
-double H_;
-double H_0 = 0.0;
 
 //gravity_est()
 double delta_t = 0.020;
@@ -131,15 +121,6 @@ int CHANNEL[7];
 unsigned long dt;
 unsigned long time1 = 0;
 
-//wifi
-byte x1H = 255;
-const char ssid[] = "yamatake wifi"; // SSID
-const char pass[] = "yamatake wifi";  // password
-const IPAddress ip(192, 168, 4, 2);       // IPアドレス(ゲートウェイも兼ねる)
-const IPAddress subnet(255, 255, 255, 0); // サブネットマスク
-const char * udpAddress = "192.168.4.2";
-WiFiUDP UDP1;
-
 void Airspeed_sensor(void){
   I2Cread(Airspeed3,0x03,1,&Buf[1]);
   I2Cread(Airspeed3,0x04,1,&Buf[2]);
@@ -201,20 +182,6 @@ void Airspeed_sensor(void){
   V = sqrt(VX*VX+VY*VY+VZ*VZ);
   attack = atan2(VZ,VX)*(180.0/PI)+5.0;
   sideslip = atan2(VY,sqrt(VX*VX+VZ*VZ))*(180.0/PI);
-}
-
-void PSD(void){
-  E = 0.0;
-  for(i=0;i<20;i++){
-    adc_key_in = analogRead(35);
-    e = adc_key_in*3.3/4096.0;
-    E = E+e;
-  }
-  E = E/20.0;
-  H = 8.1892*pow(E,4)-64.14*pow(E,3)+188.5*pow(E,2)-247.73*E+124.94;
-  //H_ = k/(3.4/k*E-1)*(-0.2455*pow(E,3)+1.6018*pow(E,2)-3.4907*E+3.5574);
-  if(!((H>1.0)&&(H<5.5))) H = H_0;
-  H_0 = H;
 }
 
 void gravity_est(void){
@@ -464,7 +431,7 @@ void SD_micro(){
       dataFile.print(V_sen[9]); dataFile.print(" , ");
       dataFile.print(V_sen[10]); dataFile.print(" , ");
       dataFile.print(V_sen[11]); dataFile.print(" , ");*/
-      dataFile.print(H); dataFile.print(" , ");
+      dataFile.print(psd.PSDRead()); dataFile.print(" , ");
       dataFile.print(radius); dataFile.print(" , ");
       //dataFile.print(V_caret); dataFile.print(" , ");
       dataFile.print(ail_deg); dataFile.print(" , ");
@@ -499,38 +466,15 @@ void Display()
   Serial.print(roll); Serial.print(", ");
   Serial.print(pitch); Serial.print(", ");
   Serial.print(yaw); Serial.print(", ");
-  //Serial.print(yaw_cnt); Serial.print(", ");
-  //Serial.print(ch[1]); Serial.print(", ");
-  //Serial.print(ch[2]); Serial.print(", ");
-  //Serial.print(ch[3]); Serial.print(", ");
-  //Serial.print(ch[4]); Serial.print(", ");
-  //Serial.print(ch[5]); Serial.print(", ");
-  //Serial.print(ch[6]); Serial.print(", ");
-  //Serial.print(ch[7]); Serial.print(", ");
-  //Serial.print(ch[8]); Serial.print(", ");
-  //Serial.print(ch[9]); Serial.print(", ");
-  //Serial.print(H); Serial.print(", ");
-  //Serial.print(ch[11]); Serial.print(", ");
-  //Serial.print(ch[12]); Serial.print(", ");
-  //Serial.print(yaw_rate); Serial.print(", ");
   Serial.print(pitch_integral); Serial.print(", ");
-  //Serial.print(ele_deg); Serial.print(", ");
-  //Serial.print(H); Serial.print(", ");
-  //Serial.print(H_); Serial.print(", ");
   Serial.println();
 }
 
-void wifi()
-{
-  if (!UDP1.parsePacket()) { 
-    x1H = UDP1.read(); //wifiデータ受信(1バイト)
-    }
-}
-
-// initialize sbus
+// initialize
 HardwareSerial UART2(2);
 Sbus sbus(UART2);
 IMU imu;
+PSD psd;
 
 void setup(void){
 
@@ -551,28 +495,18 @@ void setup(void){
     ledcSetup(CHANNEL[i],50,10);
     ledcAttachPin(IN[i],CHANNEL[i]);
   }
-
-  WiFi.softAP(ssid, pass);           // SSIDとパスの設定
-  delay(100);                        // 追記：このdelayを入れないと失敗する場合がある
-  WiFi.softAPConfig(ip, ip, subnet); // IPアドレス、ゲートウェイ、サブネットマスクの設定
-  Serial.print("AP IP address: ");
-  IPAddress myIP = WiFi.softAPIP();
-  Serial.println(myIP);
-  Serial.println("Starting UDP");
-  UDP1.begin(111);  // UDP通信の開始(引数はポート番号)
-    
-  delay(100);
+  YUBWifi yubWifi;
 }
 
 void loop(void){
 
   sbus.SbusRead(UART2); // フタバ工業：sbus規格デジタル信号を読み込む
   imu.IMURead(); // 9-軸センサを読み取る（6軸のみ使用）
-  PSD(); // 高度制御 / 高度計
+  //PSD(); // 高度制御 / 高度計
   gravity_est(); // 姿勢角？の計算
   madgwick(); // マグフィルター（姿勢角を出すための計算）
   control(); // ＰＩＤ制御（モーター、エレベーターやラダー）
-  wifi(); // wifi（処理落ちするかも）
+  yubWifi.WifiRead(); // wifi（処理落ちするかも）
   SD_micro(); // フライトデータ書き込み用
   Display(); // デバッグ用
 
