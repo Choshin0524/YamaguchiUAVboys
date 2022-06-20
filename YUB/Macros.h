@@ -6,6 +6,9 @@
 
 #define PI 3.14159265358979
 
+// サンプリング
+#define delta_t 0.020
+
 #define PSDPin 35
 
 #define Kp_a 20.0

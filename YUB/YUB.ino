@@ -5,36 +5,7 @@
 #include "IMU.h"
 #include "PSD.h"
 #include "YUBWifi.h"
-
-//Airspeed_sensor
-int16_t V_I2C;
-double V_sen[12];
-double VX,VY,VZ,V;
-double attack;
-double sideslip;
-int z=0;
-
-//gravity_est()
-double delta_t = 0.020;
-
-double Ox = 0.0;
-double Oy = 0.0;
-double Oz = 0.0;
-
-double Ix[6] = {0,0,0,0,0,0};
-double Iy[6] = {0,0,0,0,0,0};
-double Iz[6] = {0,0,0,0,0,0};
-
-double g = 1;
-double q_caret[4];
-double ag_caret[3];
-double C[3];
-double ag_caretS[3];
-double a_C[3];
-double rr;
-double u;
-double r[3];
-double ag[3];
+#include "GravityEst.h"
 
 //madgwick()
 double norm;
@@ -56,14 +27,12 @@ double yaw_rate;
 
 //control()
 double ar[3];
-double a_m;
 double I[6] = {0,0,0,0,0,0};
 double O[6] = {0,0,0,0,0,0};
 double a[6] = {-0.1254306,0.8811301,-2.5452529,3.8060181,-2.9754221,1};
 double b[6] = {0.0012826,0.0064129,0.0128258,0.0128258,0.0064129,0.0012826};
 double radius;
 double radius0 = 15.0;
-double sideslip0 = 0.0;
 double V_caret;
 
 double roll_ref = 0.0;
@@ -105,146 +74,12 @@ double sff_deg;
 double flap_deg;
 
 int servo[7];
-
-//SD_micro()
-File dataFile;
-
-unsigned long Time = 0;
-
 //setup()
-int i;
 
-int IN[7];
-int CHANNEL[7];
 
 //loop()
 unsigned long dt;
 unsigned long time1 = 0;
-
-void Airspeed_sensor(void){
-  I2Cread(Airspeed3,0x03,1,&Buf[1]);
-  I2Cread(Airspeed3,0x04,1,&Buf[2]);
-  I2Cread(Airspeed2,0x03,1,&Buf[3]);
-  I2Cread(Airspeed2,0x04,1,&Buf[4]);
-  I2Cread(Airspeed1,0x03,1,&Buf[5]);
-  I2Cread(Airspeed1,0x04,1,&Buf[6]);
-  /*I2Cread(Airspeed3,0x0D,1,&Buf[7]);
-  I2Cread(Airspeed3,0x0E,1,&Buf[8]);
-  I2Cread(Airspeed2,0x0D,1,&Buf[9]);
-  I2Cread(Airspeed2,0x0E,1,&Buf[10]);
-  I2Cread(Airspeed1,0x0D,1,&Buf[11]);
-  I2Cread(Airspeed1,0x0E,1,&Buf[12]);
-  I2Cread(Airspeed3,0x0F,1,&Buf[13]);
-  I2Cread(Airspeed3,0x10,1,&Buf[14]); 
-  I2Cread(Airspeed2,0x0F,1,&Buf[15]);
-  I2Cread(Airspeed2,0x10,1,&Buf[16]);
-  I2Cread(Airspeed1,0x0F,1,&Buf[17]);
-  I2Cread(Airspeed1,0x10,1,&Buf[18]);
-  I2Cread(Airspeed3,0x11,1,&Buf[19]);
-  I2Cread(Airspeed3,0x12,1,&Buf[20]);
-  I2Cread(Airspeed2,0x11,1,&Buf[21]);
-  I2Cread(Airspeed2,0x12,1,&Buf[22]);
-  I2Cread(Airspeed1,0x11,1,&Buf[23]);
-  I2Cread(Airspeed1,0x12,1,&Buf[24]);*/
-
-  V_I2C = ((int16_t)(Buf[1]&0xFF)<<8)|(int16_t)(Buf[2]&0xFF);
-  V_sen[0] = (double)(V_I2C)/100.0;
-  V_I2C = ((int16_t)(Buf[3]&0xFF)<<8)|(int16_t)(Buf[4]&0xFF);
-  V_sen[1] = (double)(V_I2C)/100.0;
-  V_I2C = ((int16_t)(Buf[5]&0xFF)<<8)|(int16_t)(Buf[6]&0xFF);
-  V_sen[2] = (double)(V_I2C)/100.0;
-
-  /*V_I2C = ((int16_t)(Buf[7]&0xFF)<<8)|(int16_t)(Buf[8]&0xFF);
-  V_sen[3] = (double)(V_I2C);
-  V_I2C= ((int16_t)(Buf[9]&0xFF)<<8)|(int16_t)(Buf[10]&0xFF);
-  V_sen[4] = (double)(V_I2C);
-  V_I2C= ((int16_t)(Buf[11]&0xFF)<<8)|(int16_t)(Buf[12]&0xFF);
-  V_sen[5] = (double)(V_I2C);
-  
-  V_I2C= ((int16_t)(Buf[13]&0xFF)<<8)|(int16_t)(Buf[14]&0xFF);
-  V_sen[6] = (double)(V_I2C)/100.0;
-  V_I2C= ((int16_t)(Buf[15]&0xFF)<<8)|(int16_t)(Buf[16]&0xFF);
-  V_sen[7] = (double)(V_I2C)/100.0;
-  V_I2C= ((int16_t)(Buf[17]&0xFF)<<8)|(int16_t)(Buf[18]&0xFF);
-  V_sen[8] = (double)(V_I2C)/100.0;
-
-  V_I2C= ((int16_t)(Buf[19]&0xFF)<<8)|(int16_t)(Buf[20]&0xFF);
-  V_sen[9] = (double)(V_I2C)/100.0;
-  V_I2C= ((int16_t)(Buf[21]&0xFF)<<8)|(int16_t)(Buf[22]&0xFF);
-  V_sen[10] = (double)(V_I2C)/100.0;
-  V_I2C= ((int16_t)(Buf[23]&0xFF)<<8)|(int16_t)(Buf[24]&0xFF);
-  V_sen[11] = (double)(V_I2C)/100.0;*/
-  
-  VX = V_sen[1]*cos(45.0*(PI/180.0))+V_sen[2]*cos(45.0*(PI/180.0));
-  VY = -V_sen[2]*sin(45.0*(PI/180.0))+V_sen[1]*sin(45.0*(PI/180.0));
-  VZ = V_sen[0];
-  
-  V = sqrt(VX*VX+VY*VY+VZ*VZ);
-  attack = atan2(VZ,VX)*(180.0/PI)+5.0;
-  sideslip = atan2(VY,sqrt(VX*VX+VZ*VZ))*(180.0/PI);
-}
-
-void gravity_est(void){
-  AX = AX-AXave;
-  AY = AY-AYave;
-  AZ = AZ-AZave+1.0;
-  P = Psen-Pave;
-  Q = Qsen-Qave;
-  R = Rsen-Rave;
-  
-  for(i=5;i>0;i--){
-    Ix[i] = Ix[i-1];
-    Iy[i] = Iy[i-1];
-    Iz[i] = Iz[i-1];
-  }
-
-  Ix[0] = AX;
-  Iy[0] = AY;
-  Iz[0] = AZ;
-
-  Ox = (Ix[5]+Ix[4]+Ix[3]+Ix[2]+Ix[1]+Ix[0])/6.0;
-  Oy = (Iy[5]+Iy[4]+Iy[3]+Iy[2]+Iy[1]+Iy[0])/6.0;
-  Oz = (Iz[5]+Iz[4]+Iz[3]+Iz[2]+Iz[1]+Iz[0])/6.0;
-
-  AX = Ox;
-  AY = Oy;
-  AZ = Oz;
-
-  ar[0] = AX*(qest_[0]*qest_[0]+qest_[1]*qest_[1]-qest_[2]*qest_[2]-qest_[3]*qest_[3])+2*AY*(qest_[1]*qest_[2]-qest_[0]*qest_[3])+2*AZ*(qest_[1]*qest_[3]+qest_[0]*qest_[2]);
-  ar[1] = 2*AX*(qest_[1]*qest_[2]+qest_[0]*qest_[3])+AY*(qest_[0]*qest_[0]-qest_[1]*qest_[1]+qest_[2]*qest_[2]-qest_[3]*qest_[3])+2*AZ*(qest_[2]*qest_[3]-qest_[0]*qest_[1]);
-  
-  q_caret[0] = qest_[0]+0.5*(-qest_[1]*P-qest_[2]*Q-qest_[3]*R)*delta_t;
-  q_caret[1] = qest_[1]+0.5*(qest_[0]*P-qest_[3]*Q+qest_[2]*R)*delta_t;
-  q_caret[2] = qest_[2]+0.5*(qest_[3]*P+qest_[0]*Q-qest_[1]*R)*delta_t;
-  q_caret[3] = qest_[3]+0.5*(-qest_[2]*P+qest_[1]*Q+qest_[0]*R)*delta_t;
-  
-  ag_caret[0] = g*q_caret[1]*q_caret[3]-g*q_caret[0]*q_caret[2]+g*q_caret[1]*q_caret[3]-g*q_caret[0]*q_caret[2];
-  ag_caret[1] = g*q_caret[2]*q_caret[3]+g*q_caret[2]*q_caret[3]+g*q_caret[0]*q_caret[1]+g*q_caret[0]*q_caret[1];
-  ag_caret[2] = g*q_caret[3]*q_caret[3]-g*q_caret[2]*q_caret[2]-g*q_caret[1]*q_caret[1]+g*q_caret[0]*q_caret[0];
-
-  C[0] = AX*(g*g)/(AX*AX+AY*AY+AZ*AZ);
-  C[1] = AY*(g*g)/(AX*AX+AY*AY+AZ*AZ);
-  C[2] = AZ*(g*g)/(AX*AX+AY*AY+AZ*AZ);
-
-  for(i=0;i<3;i++) ag_caretS[i] = ag_caret[i]*(C[0]*C[0]+C[1]*C[1]+C[2]*C[2])/(C[0]*ag_caret[0]+C[1]*ag_caret[1]+C[2]*ag_caret[2]);
-
-  for(i=0;i<3;i++) a_C[i] = ag_caretS[i]-C[i];
-
-  rr = g*g*(AX*AX+AY*AY+AZ*AZ-g*g)/(AX*AX+AY*AY+AZ*AZ);
-  
-  u = sqrt(rr/(a_C[0]*a_C[0]+a_C[1]*a_C[1]+a_C[2]*a_C[2]));
-
-  for(i=0;i<3;i++) r[i] = u*(ag_caretS[i]-C[i]);
-
-  for(i=0;i<3;i++) ag[i] = C[i]+r[i];
-
-  if(AX*AX+AY*AY+AZ*AZ-g*g<0){
-    ag[0] = AX;
-    ag[1] = AY;
-    ag[2] = AZ;
-  }
-  a_m = 9.81*sqrt(ar[0]*ar[0]+ar[1]*ar[1]);
-}
 
 void madgwick(void){
   norm = sqrt(ag[0]*ag[0]+ag[1]*ag[1]+ag[2]*ag[2]);
@@ -293,14 +128,7 @@ void madgwick(void){
   roll  = (180.0/PI)*atan((2.0*qest[2]*qest[3]+2.0*qest[0]*qest[1])/(1.0-2.0*qest[1]*qest[1]-2.0*qest[2]*qest[2]));
   pitch = -(180.0/PI)*asin(2.0*qest[0]*qest[2]-2.0*qest[1]*qest[3])+6.0;
   yaw   = -(180.0/PI)*atan2(2.0*qest[1]*qest[2]+2.0*qest[0]*qest[3],1.0-2.0*qest[2]*qest[2]-2.0*qest[3]*qest[3]);
-  /*
-  yaw_tmp0 = yaw_tmp1;
-  yaw_tmp1 = yaw;
-  yaw_unrap = yaw_tmp1-yaw_tmp0;
-  if(yaw_unrap<-300.0) yaw_cnt++;
-  if(yaw_unrap>300.0) yaw_cnt--;
-  yaw = yaw+yaw_cnt*360.0;
-  */
+
   yaw_rate = -(180.0/PI)*((R*cos((PI/180.0)*roll)+Q*sin((PI/180.0)*roll))/(cos((PI/180.0)*pitch)));
   radius = a_m/(yaw_rate*(PI/180.0)*yaw_rate*(PI/180.0));
   if(!((radius>3.0)&&(radius<15.0))) radius = radius0;
@@ -316,7 +144,6 @@ void madgwick(void){
 
 void control(void){
   if(ch[8]>=1400){ //ロール自動
-    
     
     if(ch[8]>=2000){
     
@@ -352,7 +179,6 @@ void control(void){
       radius_integral = radius_integral+(radius-radius_ref)*delta_t;
       sideslip_integral = sideslip_integral+(sideslip-sideslip_ref)*delta_t;
 
-  
       //左旋回
       if(yaw_rate0<0){
         ch[4] = -Kp_R*(radius-radius_ref)-Ki_R*radius_integral-Kd_R*(radius-radius0)+ch4_correction+offset[4];
@@ -368,15 +194,9 @@ void control(void){
       
     }
     
-    ut = -(PI/180.0)*0.1*yaw_rate;
-    ch[3] = (1-ut)*(ch[3]-offset[3])-0.5*(ch[1]-offset[1])+offset[3];//右
-    ch[6] = (1+ut)*(ch[6]-offset[6])+0.5*(ch[1]-offset[1])+offset[6];//左
-    //ch[3] = (1-K_t)*(ch[3]-offset[3])-0.5*(ch[1]-offset[1])+offset[3];//右
-    //ch[6] = (1+K_t)*(ch[6]-offset[6])+0.5*(ch[1]-offset[1])+offset[6];//左 
     roll_integral = roll_integral+(roll-roll_ref)*delta_t;
     ch[1] = Kp_a*(roll-roll_ref)+Kd_a*P+Ki_a*roll_integral+offset[1];
     radius0 = radius;
-    sideslip0 = sideslip;
   }
   else roll_integral = 0.0;
   
@@ -399,69 +219,8 @@ void control(void){
   }
 }
 
-void SD_micro(){
-  if(ch[11]>1500){
-    dataFile = SD.open("/twingerZ.txt", FILE_APPEND);
-    
-    Time += dt;
-    
-    if(dataFile){
-      dataFile.print(dt);dataFile.print(" , ");
-      dataFile.print(Time); dataFile.print(" , ");
-      dataFile.print(AX); dataFile.print(" , ");
-      dataFile.print(AY); dataFile.print(" , ");
-      dataFile.print(AZ); dataFile.print(" , ");
-      dataFile.print(P); dataFile.print(" , ");
-      dataFile.print(Q); dataFile.print(" , ");
-      dataFile.print(R); dataFile.print(" , ");
-      dataFile.print(roll); dataFile.print(" , ");
-      dataFile.print(pitch); dataFile.print(" , ");
-      dataFile.print(yaw); dataFile.print(" , ");
-      dataFile.print(yaw_rate); dataFile.print(" , ");
-      dataFile.print(a_m); dataFile.print(" , ");
-      dataFile.print(V_sen[0]); dataFile.print(" , ");
-      dataFile.print(V_sen[1]); dataFile.print(" , ");
-      dataFile.print(V_sen[2]); dataFile.print(" , ");
-      /*dataFile.print(V_sen[3]); dataFile.print(" , ");
-      dataFile.print(V_sen[4]); dataFile.print(" , ");
-      dataFile.print(V_sen[5]); dataFile.print(" , ");
-      dataFile.print(V_sen[6]); dataFile.print(" , ");
-      dataFile.print(V_sen[7]); dataFile.print(" , ");
-      dataFile.print(V_sen[8]); dataFile.print(" , ");
-      dataFile.print(V_sen[9]); dataFile.print(" , ");
-      dataFile.print(V_sen[10]); dataFile.print(" , ");
-      dataFile.print(V_sen[11]); dataFile.print(" , ");*/
-      dataFile.print(psd.PSDRead()); dataFile.print(" , ");
-      dataFile.print(radius); dataFile.print(" , ");
-      //dataFile.print(V_caret); dataFile.print(" , ");
-      dataFile.print(ail_deg); dataFile.print(" , ");
-      dataFile.print(ele_deg); dataFile.print(" , ");
-      dataFile.print(rud_deg); dataFile.print(" , ");
-      dataFile.print(sff_deg); dataFile.print(" , ");
-      dataFile.print(ch[10]); dataFile.print(" , ");
-      //dataFile.print(ch[12]); dataFile.print(" , ");
-      dataFile.print(ch[3]); dataFile.print(" , ");
-      dataFile.print(ch[6]); dataFile.print(" , ");
-      dataFile.print(ut); dataFile.print(" , ");
-      dataFile.print(VX); dataFile.print(" , ");
-      dataFile.print(VY); dataFile.print(" , ");
-      dataFile.print(VZ); dataFile.print(" , ");
-      dataFile.print(V); dataFile.print(" , ");
-      dataFile.print(attack); dataFile.print(" , ");
-      dataFile.print(sideslip); dataFile.print(" , ");
-      if(x1H != 255){ //受信データに255が大量に含まれているため(wifiエラー?)
-        dataFile.print(x1H); dataFile.print(" , ");
-      }
-      dataFile.println();
-      dataFile.close();
-    }
-  }
-}
-
-
 void Display()
 {
-  //Serial.print(dt1); Serial.print(",,, ");
   Serial.print(Time); Serial.print(",,, ");
   Serial.print(roll); Serial.print(", ");
   Serial.print(pitch); Serial.print(", ");
@@ -475,6 +234,7 @@ HardwareSerial UART2(2);
 Sbus sbus(UART2);
 IMU imu;
 PSD psd;
+GravityEst gEst;
 
 void setup(void){
 
@@ -483,17 +243,14 @@ void setup(void){
   pinMode(12, OUTPUT);
   SD.begin(5,SPI,24000000,"/sd");
 
-  IN[1-1] = 17;
-  IN[2-1] = 33;
-  IN[3-1] = 27;
-  IN[4-1] = 25;
-  IN[5-1] = 14;
-  IN[6-1] = 26;
-  IN[7-1] = 13;
-  for(i=0;i<7;i++){
+  // pinをCHANNELに割り当て
+  int IN[7] = {17, 33, 27, 25, 14, 26, 13};
+  int CHANNEL[7];
+  for(int i = 0; i < 7; i++)
+  {
     CHANNEL[i] = i;
-    ledcSetup(CHANNEL[i],50,10);
-    ledcAttachPin(IN[i],CHANNEL[i]);
+    ledcSetup(CHANNEL[i], 50, 10);
+    ledcAttachPin(IN[i], CHANNEL[i]);
   }
   YUBWifi yubWifi;
 }
@@ -502,21 +259,12 @@ void loop(void){
 
   sbus.SbusRead(UART2); // フタバ工業：sbus規格デジタル信号を読み込む
   imu.IMURead(); // 9-軸センサを読み取る（6軸のみ使用）
-  //PSD(); // 高度制御 / 高度計
-  gravity_est(); // 姿勢角？の計算
+  psd.PSDRead();
+  gEst.GravityEstRead(imu); // 磁気の計算
   madgwick(); // マグフィルター（姿勢角を出すための計算）
   control(); // ＰＩＤ制御（モーター、エレベーターやラダー）
   yubWifi.WifiRead(); // wifi（処理落ちするかも）
-  SD_micro(); // フライトデータ書き込み用
   Display(); // デバッグ用
-
-  // if(z == 4)
-  // {
-  //   Airspeed_sensor();
-  // }
-
-  // z++;
-  // if(z==5) z=0;
 
   while(millis()<time1);
   dt = (unsigned long)(millis()-time1+20);
