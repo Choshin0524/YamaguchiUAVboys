@@ -3,11 +3,10 @@
 #define Airspeed3 0x0C //x
 #define Airspeed2 0x0B //y
 #define Airspeed1 0x0A //z
-
-#define PI 3.14159265358979
-
 // サンプリング
 #define delta_t 0.020
+
+
 
 #define PSDPin 35
 

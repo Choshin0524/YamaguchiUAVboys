@@ -32,7 +32,7 @@ public:
 private:
     void I2CRead(uint8_t Address,uint8_t Register,uint8_t Byte,uint8_t* Data);
     void I2CWrite(uint8_t Address,uint8_t Register,uint8_t Data);
-private:
+public:
     uint8_t buffer[25];
     int16_t A_x_sen, A_y_sen, A_z_sen;
     float AX, AY, AZ;

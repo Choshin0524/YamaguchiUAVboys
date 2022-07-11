@@ -8,9 +8,9 @@ Sbus::Sbus(HardwareSerial& uart)
 
 void Sbus::SbusRead(HardwareSerial& uart)
 {
-     buffer[3] = NULL;
-     buffer[4] = NULL;
-     buffer[5] = NULL;
+     buffer[3] = 0;
+     buffer[4] = 0;
+     buffer[5] = 0;
 
     //  buffer[0] check
     while(true)

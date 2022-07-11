@@ -9,7 +9,7 @@ public:
     void SbusRead(HardwareSerial& uart);
     int16_t GetCh(unsigned int chNum) const;
     int16_t GetOffset(unsigned int offsetNum) const;
-private:
+public:
     bool sbusFlag = false;
     uint8_t buffer[18];
     int16_t ch[12];
