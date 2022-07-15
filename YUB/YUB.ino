@@ -1,7 +1,6 @@
 #include <math.h>
 #include "Sbus.h"
 #include "IMU.h"
-#include "PSD.h"
 #include "Control.h"
 #include "Madgwick.h"
 
@@ -9,7 +8,6 @@
 HardwareSerial UART2(2);
 Sbus sbus(UART2);
 IMU imu;
-PSD psd;
 Madgwick mdg;
 Control ctl;
 unsigned long dt;
@@ -34,7 +32,6 @@ void loop(void)
 {
   sbus.SbusRead(UART2); // フタバ工業：sbus規格デジタル信号を読み込む
   imu.IMURead();        // 9-軸センサを読み取る（6軸のみ使用）
-  psd.PSDRead();
   mdg.MadgwickRead(imu);      // マグフィルター（姿勢角を出すための計算）
   ctl.MainControl(sbus, imu, mdg, CHANNEL); // ＰＩＤ制御（モーター、エレベーターやラダー）
 
