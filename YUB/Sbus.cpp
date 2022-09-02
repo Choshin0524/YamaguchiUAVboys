@@ -1,25 +1,20 @@
 #include "Sbus.h"
 #include "Arduino.h"
 
-Sbus::Sbus(HardwareSerial& uart)
+Sbus::Sbus()
 {
-    uart.begin(100000,SERIAL_8E2);
 }
 
-void Sbus::SbusRead(HardwareSerial& uart)
+void Sbus::SbusRead(HardwareSerial &uart)
 {
-     buffer[3] = 0;
-     buffer[4] = 0;
-     buffer[5] = 0;
-
     //  buffer[0] check
-    while(true)
+    while (true)
     {
-        if(uart.available() > 0) 
+        if (uart.available() > 0)
         {
-             buffer[0] = uart.read();
+            dataBuffer[0] = uart.read();
         }
-        if( buffer[0] == 0x0f)
+        if (dataBuffer[0] == 0x0f)
         {
             break;
         }
@@ -27,42 +22,25 @@ void Sbus::SbusRead(HardwareSerial& uart)
 
     //  buffer にデータ格納
     unsigned int bufferPos = 1;
-    while(uart.available())
+    while (uart.available())
     {
-         buffer[bufferPos++] = uart.read();
-    } 
-
-    chBuffer[0]  = ((buffer[1] | buffer[2]<<8)&0x07FF);// 捨て用
-    chBuffer[1]  = ((buffer[2]>>3 | buffer[3]<<5)&0x07FF);//ch1 エルロン
-    chBuffer[2]  = ((buffer[3]>>6 | buffer[4]<<2| buffer[5]<<10)&0x07FF);//ch2 エレベーター
-    chBuffer[3]  = ((buffer[5]>>1 | buffer[6]<<7)&0x07FF);//ch3 推力L
-    chBuffer[4]  = ((buffer[6]>>4 | buffer[7]<<4)&0x07FF);//ch4 横力板
-    chBuffer[5]  = ((buffer[7]>>7 | buffer[8]<<1| buffer[9]<<9)&0x07FF);//ch5 ラダー
-    chBuffer[6]  = ((buffer[9]>>2 | buffer[10]<<6)&0x07FF);//ch6 推力R 
-    chBuffer[7]  = ((buffer[10]>>5 | buffer[11]<<3)&0x07FF);//ch7
-    chBuffer[8]  = ((buffer[12] | buffer[13]<<8)&0x07FF);//ch8 ロール
-    chBuffer[9]  = ((buffer[13]>>3 | buffer[14]<<5)&0x07FF);
-    chBuffer[10] = ((buffer[14]>>6 | buffer[15]<<2| buffer[16]<<10)&0x07FF);
-    chBuffer[11] = ((buffer[16]>>1 | buffer[17]<<7)&0x07FF);
-
-    for(unsigned short i = 0; i < 12; i++) 
-    {
-        chBuffer[i] = 0.89286 * chBuffer[i] + 585.7;
+        dataBuffer[bufferPos++] = uart.read();
     }
 
-    for (unsigned short i = 12; i > 0; i--)
-    {
-        chBuffer[i] = chBuffer[i - 1];
-    }
-    
-    if(!sbusFlag && chBuffer[8] >= 1300)
-    {
-        for(unsigned short i = 1; i <= 7; i++) 
-        {
-            offset[i] = chBuffer[i];
-        }
-        sbusFlag = true;
-    }
+    chBuffer[0] = ((dataBuffer[1] | dataBuffer[2] << 8) & 0x07FF);                   // 捨て用
+    chBuffer[1] = ((dataBuffer[2] >> 3 | dataBuffer[3] << 5) & 0x07FF);                   // ch1 エルロン
+    chBuffer[2] = ((dataBuffer[3] >> 6 | dataBuffer[4] << 2 | dataBuffer[5] << 10) & 0x07FF); // ch2 エレベーター
+    chBuffer[3] = ((dataBuffer[5] >> 1 | dataBuffer[6] << 7) & 0x07FF);                   // ch3 推力L
+    chBuffer[4] = ((dataBuffer[6] >> 4 | dataBuffer[7] << 4) & 0x07FF);                   // ch4 横力板
+    chBuffer[5] = ((dataBuffer[7] >> 7 | dataBuffer[8] << 1 | dataBuffer[9] << 9) & 0x07FF);  // ch5 ラダー
+    chBuffer[6] = ((dataBuffer[9] >> 2 | dataBuffer[10] << 6) & 0x07FF);                  // ch6 推力R
+    chBuffer[7] = ((dataBuffer[10] >> 5 | dataBuffer[11] << 3) & 0x07FF);                 // ch7
+    chBuffer[8] = ((dataBuffer[12] | dataBuffer[13] << 8) & 0x07FF);                      // ch8 ロール
+    chBuffer[9] = ((dataBuffer[13] >> 3 | dataBuffer[14] << 5) & 0x07FF);
+    chBuffer[10] = ((dataBuffer[14] >> 6 | dataBuffer[15] << 2 | dataBuffer[16] << 10) & 0x07FF);
+    chBuffer[11] = ((dataBuffer[16] >> 1 | dataBuffer[17] << 7) & 0x07FF);
+
+
 }
 
 int16_t Sbus::GetCh(unsigned int chNum) const
