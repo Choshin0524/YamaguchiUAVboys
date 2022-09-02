@@ -1,14 +1,18 @@
 #include "IMU.h"
 #include "Arduino.h"
 #include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
 
 IMU::IMU()
 {
-    Wire.begin();
-    I2CWrite(MPU6050, 27, 0x10);
-    I2CWrite(MPU6050, 28, 0x18);
-    I2CWrite(MPU6050, 0x37, 0x02);
-    I2CWrite(MPU6050, 0x6B, 0x00);
+    if (!bno.begin())
+    {
+        /* There was a problem detecting the BNO055 ... check your connections */
+        Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+        while (1);
+    }
     for (unsigned short i = 0; i < 1000; i++)
     {
         IMURead();
@@ -21,45 +25,21 @@ IMU::IMU()
     }
 }
 
-void IMU::I2CRead(uint8_t Address, uint8_t Register, uint8_t Byte, uint8_t *Data)
-{
-    Wire.beginTransmission(Address);
-    Wire.write(Register);
-    Wire.endTransmission();
-    Wire.requestFrom(Address, Byte);
-    uint8_t index = 0;
-    while (Wire.available())
-        Data[index++] = Wire.read();
-}
-
-void IMU::I2CWrite(uint8_t Address, uint8_t Register, uint8_t Data)
-{
-    Wire.beginTransmission(Address);
-    Wire.write(Register);
-    Wire.write(Data);
-    Wire.endTransmission();
-}
-
 void IMU::IMURead()
 {
-    I2CWrite(MPU6050, 0x1C, 0x18);
-    I2CWrite(MPU6050, 0x1D, 0x06);
-    I2CWrite(MPU6050, 0x1B, 0x10);
-    I2CWrite(MPU6050, 0x1A, 0x06);
-    I2CRead(MPU6050, 0x3B, 14, buffer);
-
-    A_x_sen = (buffer[0] << 8 | buffer[1]);
-    A_y_sen = (buffer[2] << 8 | buffer[3]);
-    A_z_sen = buffer[4] << 8 | buffer[5];
-
+    // 加速度センサ
+    imu::Vector<3> accelermetor = bno.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    A_x_sen = accelermetor.x();
+    A_y_sen = accelermetor.y();
+    A_z_sen = accelermetor.z();
     AY = -(float)(A_x_sen * 0.488 * 0.001);
     AX = (float)(A_y_sen * 0.488 * 0.001);
     AZ = (float)(A_z_sen * 0.488 * 0.001);
-
-    G_x_sen = (buffer[8] << 8 | buffer[9]);
-    G_y_sen = (buffer[10] << 8 | buffer[11]);
-    G_z_sen = buffer[12] << 8 | buffer[13];
-
+    //ジャイロセンサ
+    imu::Vector<3> gyroscope = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    G_x_sen = gyroscope.x();
+    G_y_sen = gyroscope.y();
+    G_z_sen = gyroscope.z();
     Qsen = -(float)((PI / 180.0) * G_x_sen * 0.03048);
     Psen = (float)((PI / 180.0) * G_y_sen * 0.03048);
     Rsen = (float)((PI / 180.0) * G_z_sen * 0.03048);

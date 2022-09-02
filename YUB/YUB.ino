@@ -7,7 +7,7 @@
 // initialize
 HardwareSerial UART2(2);
 Sbus sbus(UART2);
-IMU imu;
+IMU yimu;
 Madgwick mdg;
 Control ctl;
 unsigned long dt;
@@ -31,9 +31,9 @@ void setup(void)
 void loop(void)
 {
   sbus.SbusRead(UART2); // フタバ工業：sbus規格デジタル信号を読み込む
-  imu.IMURead();        // 9-軸センサを読み取る（6軸のみ使用）
-  mdg.MadgwickRead(imu);      // マグフィルター（姿勢角を出すための計算）
-  ctl.MainControl(sbus, imu, mdg, CHANNEL); // ＰＩＤ制御（モーター、エレベーターやラダー）
+  yimu.IMURead();        // 9-軸センサを読み取る（6軸のみ使用）
+  mdg.MadgwickRead(yimu);      // マグフィルター（姿勢角を出すための計算）
+  ctl.MainControl(sbus, yimu, mdg, CHANNEL); // ＰＩＤ制御（モーター、エレベーターやラダー）
 
   while (millis() < time1);
   dt = (unsigned long)(millis() - time1 + 20);

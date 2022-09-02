@@ -11,8 +11,8 @@ public:
     int16_t GetOffset(unsigned int offsetNum) const;
 public:
     bool sbusFlag = false;
-    uint8_t buffer[18];
-    int16_t ch[12];
+    uint8_t dataBuffer[18];
+    int16_t chBuffer[12];
     int16_t offset[8];
 };
 

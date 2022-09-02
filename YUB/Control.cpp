@@ -20,7 +20,7 @@ void Control::MainControl(Sbus& sbus, IMU& imu, Madgwick& mdg, int* CHANNEL)
 
             //ピッチ角一定目標値追従制御
             pitch_integral = pitch_integral + (mdg.pitch - pitch_ref) * delta_t;
-            sbus.ch[2] = -Kp_e * (mdg.pitch - pitch_ref) - Kd_e * imu.GetQ() - Ki_e * pitch_integral + ch2_correction + sbus.offset[2];
+            sbus.chBuffer[2] = -Kp_e * (mdg.pitch - pitch_ref) - Kd_e * imu.GetQ() - Ki_e * pitch_integral + ch2_correction + sbus.offset[2];
             // ch[2] = 75.0+sbus.offset[2]; //75=5[deg]
         }
         else
@@ -29,7 +29,7 @@ void Control::MainControl(Sbus& sbus, IMU& imu, Madgwick& mdg, int* CHANNEL)
             flag1 = 0;
         }
 
-        if (sbus.ch[10] <= 2000)
+        if (sbus.chBuffer[10] <= 2000)
         {
             if (flag2 == 0)
             {
@@ -50,41 +50,39 @@ void Control::MainControl(Sbus& sbus, IMU& imu, Madgwick& mdg, int* CHANNEL)
             //左旋回
             if (yaw_rate0 < 0)
             {
-                sbus.ch[4] = -Kp_R * (mdg.radius - radius_ref) - Ki_R * radius_integral - Kd_R * (mdg.radius - mdg.radius0) + ch4_correction + sbus.offset[4];
-                sbus.ch[5] = Kp_R * (mdg.radius - radius_ref) + Ki_R * radius_integral + Kd_R * (mdg.radius - mdg.radius0) + ch5_correction + sbus.offset[5];
+                sbus.chBuffer[4] = -Kp_R * (mdg.radius - radius_ref) - Ki_R * radius_integral - Kd_R * (mdg.radius - mdg.radius0) + ch4_correction + sbus.offset[4];
+                sbus.chBuffer[5] = Kp_R * (mdg.radius - radius_ref) + Ki_R * radius_integral + Kd_R * (mdg.radius - mdg.radius0) + ch5_correction + sbus.offset[5];
             }
             //右旋回
             else
             {
-                sbus.ch[4] = Kp_R * (mdg.radius - radius_ref) + Ki_R * radius_integral + Kd_R * (mdg.radius - mdg.radius0) + ch4_correction + sbus.offset[4];
-                sbus.ch[5] = -Kp_R * (mdg.radius - radius_ref) - Ki_R * radius_integral - Kd_R * (mdg.radius - mdg.radius0) + ch5_correction + sbus.offset[5];
+                sbus.chBuffer[4] = Kp_R * (mdg.radius - radius_ref) + Ki_R * radius_integral + Kd_R * (mdg.radius - mdg.radius0) + ch4_correction + sbus.offset[4];
+                sbus.chBuffer[5] = -Kp_R * (mdg.radius - radius_ref) - Ki_R * radius_integral - Kd_R * (mdg.radius - mdg.radius0) + ch5_correction + sbus.offset[5];
             }
         }
-
         roll_integral = roll_integral + (mdg.roll - roll_ref) * delta_t;
-        sbus.ch[1] = Kp_a * (mdg.roll - roll_ref) + Kd_a * imu.GetP() + Ki_a * roll_integral + sbus.offset[1];
+        sbus.chBuffer[1] = Kp_a * (mdg.roll - roll_ref) + Kd_a * imu.GetP() + Ki_a * roll_integral + sbus.offset[1];
         mdg.radius0 = mdg.radius;
     }
     else
         roll_integral = 0.0;
 
     if (sbus.GetCh(9) >= 1400)
-        sbus.ch[7] = sbus.offset[7] + 400;
-
+        sbus.chBuffer[7] = sbus.offset[7] + 400;
     if (sbus.GetCh(3) > 2100)
-        sbus.ch[3] = 2100;
+        sbus.chBuffer[3] = 2100;
     if (sbus.GetCh(6) > 2100)
-        sbus.ch[6] = 2100;
+        sbus.chBuffer[6] = 2100;
 
-    ail_deg = (sbus.ch[1] - sbus.offset[1]) / 600.0 * 25.0;
-    ele_deg = (sbus.ch[2] - sbus.offset[2]) / 600.0 * 40.0;
-    sff_deg = (sbus.ch[4] - sbus.offset[4]) / 600.0 * 32.5;
-    rud_deg = (sbus.ch[5] - sbus.offset[5]) / 600.0 * 30.0;
-    flap_deg = (sbus.ch[7] - sbus.offset[7]) / 600.0 * 30.0;
+    ail_deg = (sbus.chBuffer[1] - sbus.offset[1]) / 600.0 * 25.0;
+    ele_deg = (sbus.chBuffer[2] - sbus.offset[2]) / 600.0 * 40.0;
+    sff_deg = (sbus.chBuffer[4] - sbus.offset[4]) / 600.0 * 32.5;
+    rud_deg = (sbus.chBuffer[5] - sbus.offset[5]) / 600.0 * 30.0;
+    flap_deg = (sbus.chBuffer[7] - sbus.offset[7]) / 600.0 * 30.0;
 
     for (int i = 0; i < 7; i++)
     {
-        servo[i] = (int)(sbus.ch[i + 1] * 1024 / 20000.0);
+        servo[i] = (int)(sbus.chBuffer[i + 1] * 1024 / 20000.0);
         if (servo[i] > 108)
             servo[i] = 108;
         if (servo[i] < 51)

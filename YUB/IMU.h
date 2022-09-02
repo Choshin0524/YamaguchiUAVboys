@@ -2,6 +2,8 @@
 #define IMU_h
 #include "Macros.h"
 #include "Arduino.h"
+#include <Adafruit_BNO055.h>
+
 
 class IMU
 {
@@ -32,6 +34,7 @@ public:
 private:
     void I2CRead(uint8_t Address,uint8_t Register,uint8_t Byte,uint8_t* Data);
     void I2CWrite(uint8_t Address,uint8_t Register,uint8_t Data);
+    Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
 public:
     uint8_t buffer[25];
     int16_t A_x_sen, A_y_sen, A_z_sen;
