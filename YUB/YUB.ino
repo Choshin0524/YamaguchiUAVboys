@@ -1,9 +1,13 @@
 #include <math.h>
 #include "Sbus.h"
+#include "Control.h"
 
-// initialize
+// initialize Sbus reciver class
 HardwareSerial SbusSerial(2);
 Sbus sbus;
+
+// initialize control class
+Control ctl;
 
 void setup(void)
 {
@@ -13,11 +17,14 @@ void setup(void)
 
 void loop(void)
 {
-  sbus.SbusRead(SbusSerial); // フタバ工業：sbus規格デジタル信号を読み込む
+  // Sbus signal read
+  sbus.SbusRead(SbusSerial);
+  // serial print recived data
   for (int i = 0; i < 12; i++)
   {
     Serial.print(sbus.GetCh(3), DEC);
     Serial.print(" ");
   }
   Serial.println(" ");
+  ctl.MainControl();
 }
