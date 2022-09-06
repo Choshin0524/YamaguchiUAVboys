@@ -1,6 +1,5 @@
 #include "Control.h"
 #include "Arduino.h"
-#include "Sbus.h"
 
 Control::Control()
 {
@@ -21,9 +20,9 @@ Control::Control()
     ESCObj.attach(ESCOutputPin);
 
     // set esc min/max pulse width
-    ESCObj.writeMicroseconds(MAX_PULSE_WIDTH);
+    ESCObj.writeMicroseconds(MAX_MOTOR_PULSE_WIDTH);
     delay(2000);
-    ESCObj.writeMicroseconds(MIN_PULSE_WIDTH);
+    ESCObj.writeMicroseconds(MIN_MOTOR_PULSE_WIDTH);
     delay(2000);
 }
 void Control::MainControl(Sbus &sbus)
@@ -48,9 +47,9 @@ void Control::MainControl(Sbus &sbus)
     // output to servo
     for (int i = 0; i < SERVO_INDEX; i++)
     {
-        servoOutput[i] = servoOutput > 108 ? 108 : servoOutput[i]; 
-        servoOutput[i] = servoOutput < 51 ? 51 : servoOutput[i]; 
-        servoObj[i].write(servoOutput);
+        servoOutput[i] = servoOutput[i] > 108 ? 108 : servoOutput[i]; 
+        servoOutput[i] = servoOutput[i] < 51 ? 51 : servoOutput[i]; 
+        servoObj[i].write(servoOutput[i]);
     }
     // output to motor
     ESCObj.writeMicroseconds(thrust);

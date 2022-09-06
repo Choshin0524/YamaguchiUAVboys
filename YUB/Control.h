@@ -3,12 +3,13 @@
 #include "Arduino.h"
 #include "Macros.h"
 #include <Servo.h>
+#include "Sbus.h"
 
 class Control
 {
 public:
     Control();
-    void MainControl();
+    void MainControl(Sbus &sbus);
 private:
     int servoOutputPin[SERVO_INDEX];
     int ESCOutputPin;

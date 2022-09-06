@@ -26,5 +26,5 @@ void loop(void)
     Serial.print(" ");
   }
   Serial.println(" ");
-  ctl.MainControl();
+  ctl.MainControl(sbus);
 }
