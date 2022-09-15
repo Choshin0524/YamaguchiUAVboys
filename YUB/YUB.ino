@@ -1,11 +1,15 @@
 #include <math.h>
 #include "Sbus.h"
 #include "Control.h"
+
 // initialize
-HardwareSerial SbusSerial(2);
-Sbus* sbus = new Sbus();
-Control* ctl = new Control();
-bool ctlInitialized = false;
+HardwareSerial SbusSerial(2); // rx:16, tx:17
+Sbus* sbus = new Sbus(); // futaba reciver
+Control* ctl = new Control(); // motor output
+
+// flags
+bool ctlInitialized = false; // motor output initialize
+
 void setup(void)
 {
   SbusSerial.begin(100000, SERIAL_8E2);
@@ -18,15 +22,9 @@ void loop(void)
   {
     ctl->Initialize();
     ctlInitialized = true;
+    Serial.println("Main motor initialized.");
   }
-  Serial.print("OK");
-  sbus->SbusRead(SbusSerial); // フタバ工業：sbus規格デジタル信号を読み込む
-  for (int i = 0; i < 12; i++)
-  {
-    Serial.print(sbus->GetCh(i), DEC);
-    Serial.print(" ");
-  }
-  Serial.println(" ");
+  sbus->SbusRead(SbusSerial);
   ctl->MainControl(sbus);
   ctl->MotorControl();
 }
