@@ -6,7 +6,6 @@
 HardwareSerial SbusSerial(2); // rx:16, tx:17
 Sbus* sbus = new Sbus(); // futaba reciver
 Control* ctl = new Control(); // motor output
-
 // flags
 bool ctlInitialized = false; // motor output initialize
 

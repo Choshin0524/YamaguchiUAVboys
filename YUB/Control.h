@@ -5,6 +5,7 @@
 #include "Sbus.h"
 
 #define SERVO_INDEX 4
+
 class Control
 {
 public:

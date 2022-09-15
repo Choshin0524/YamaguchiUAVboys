@@ -35,8 +35,8 @@ void Control::MainControl(Sbus* sbus)
     // aileron, elevator, rudder
     leftAileronAngle  = map(sbus->GetCh(0), 225, 1820, 0, 180);
     rightAileronAngle = 180 - leftAileronAngle;
-    elevatorAngle     = (sbus->GetCh(1) / 9);
-    rudderAngle       = (sbus->GetCh(3) / 9);
+    elevatorAngle     = map(sbus->GetCh(1), 225, 1820, 0, 180);
+    rudderAngle       = map(sbus->GetCh(3), 225, 1820, 0, 180);
     // thrust
     leftThrottle = (sbus->GetCh(2));
 
