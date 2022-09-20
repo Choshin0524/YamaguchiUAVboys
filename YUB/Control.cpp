@@ -31,7 +31,6 @@ void Control::Initialize()
 
 void Control::MainControl(Sbus* sbus)
 {
-    // let servo angle = 0 to maximum left range
     // aileron, elevator, rudder
     leftAileronAngle  = map(sbus->GetCh(0), 225, 1820, 0, 180);
     rightAileronAngle = 180 - leftAileronAngle;

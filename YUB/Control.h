@@ -41,7 +41,7 @@ private:
     uint16_t rudderAngle;
 
     // right throttle control range: 0 - 100, max power: 100 CH6
-    // not be used when single motor
+    // !!not used!! when single motor
     uint16_t rightThrottleRatio;
 };
 
