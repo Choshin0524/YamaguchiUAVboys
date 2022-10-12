@@ -49,11 +49,11 @@ void Control::MainControl(Sbus *sbus)
         leftAileronAngle += AileronTakeOffOffset;
         rightAileronAngle -= AileronTakeOffOffset;
         break;
-    case 1824:
+    case 255:
         leftAileronAngle += AileronLevelFlightOffset;
         rightAileronAngle -= AileronLevelFlightOffset;
         break;
-    case 225:
+    case 1824:
         leftAileronAngle += AileronLandingOffset;
         rightAileronAngle -= AileronLandingOffset;
         break;
