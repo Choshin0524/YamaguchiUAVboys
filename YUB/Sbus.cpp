@@ -5,7 +5,7 @@ Sbus::Sbus()
 {
 }
 
-void Sbus::SbusRead(HardwareSerial &uart)
+bool Sbus::SbusRead(HardwareSerial &uart)
 {
     //  buffer[0] check
     while (true)
@@ -39,6 +39,8 @@ void Sbus::SbusRead(HardwareSerial &uart)
     chBuffer[9] = ((dataBuffer[13] >> 3 | dataBuffer[14] << 5) & 0x07FF);
     chBuffer[10] = ((dataBuffer[14] >> 6 | dataBuffer[15] << 2 | dataBuffer[16] << 10) & 0x07FF);
     chBuffer[11] = ((dataBuffer[16] >> 1 | dataBuffer[17] << 7) & 0x07FF);
+    
+    return true;
 }
 
 int16_t Sbus::GetCh(unsigned int chNum) const

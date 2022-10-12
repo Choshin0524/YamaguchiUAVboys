@@ -19,7 +19,7 @@ private:
     uint8_t servoOutputPin[SERVO_INDEX];
     uint8_t ESCOutputPin;
     uint16_t servoOutput[SERVO_INDEX];
-private:
+public:
     // int16_t ---> 16bits  int
     // left aileron control range: 0 - 180, flat: 90 CH1
     uint16_t leftAileronAngle;
@@ -43,6 +43,11 @@ private:
     // right throttle control range: 0 - 100, max power: 100 CH6
     // !!not used!! when single motor
     uint16_t rightThrottleRatio;
+
+    uint16_t AileronTakeOffOffset;
+    uint16_t AileronLevelFlightOffset;
+    uint16_t AileronLandingOffset;
+    
 };
 
 #endif

@@ -10,11 +10,16 @@ void Control::Initialize()
     // set servo motor output pin
     servoOutputPin[0] = 32; // leftAileron
     servoOutputPin[1] = 33; // rightAileron
-    servoOutputPin[2] = 25; // elevator 
+    servoOutputPin[2] = 25; // elevator
     servoOutputPin[3] = 26; // rudder
     // set brushless motor output pin
-    ESCOutputPin = 27;
-    
+    ESCOutputPin = 14;
+
+    // set aileron offset
+    AileronTakeOffOffset = 10;
+    AileronLevelFlightOffset = 0;
+    AileronLandingOffset = 20;
+
     // attach servo pin
     for (int i = 0; i < SERVO_INDEX; i++)
     {
@@ -29,13 +34,33 @@ void Control::Initialize()
     delay(1000);
 }
 
-void Control::MainControl(Sbus* sbus)
+void Control::MainControl(Sbus *sbus)
 {
     // aileron, elevator, rudder
-    leftAileronAngle  = map(sbus->GetCh(0), 225, 1820, 0, 180);
+    leftAileronAngle = map(sbus->GetCh(0), 225, 1820, 0, 180);
     rightAileronAngle = leftAileronAngle;
-    elevatorAngle     = map(sbus->GetCh(1), 225, 1820, 0, 180);
-    rudderAngle       = map(sbus->GetCh(3), 225, 1820, 0, 180);
+    elevatorAngle = map(sbus->GetCh(1), 225, 1820, 0, 180);
+    rudderAngle = map(sbus->GetCh(3), 225, 1820, 0, 180);
+
+    uint16_t OffsetMode = sbus->GetCh(6);
+    switch (OffsetMode)
+    {
+    case 1024:
+        leftAileronAngle += AileronTakeOffOffset;
+        rightAileronAngle -= AileronTakeOffOffset;
+        break;
+    case 1824:
+        leftAileronAngle += AileronLevelFlightOffset;
+        rightAileronAngle -= AileronLevelFlightOffset;
+        break;
+    case 225:
+        leftAileronAngle += AileronLandingOffset;
+        rightAileronAngle -= AileronLandingOffset;
+        break;
+    default:
+        break;
+    }
+
     // thrust
     leftThrottle = (sbus->GetCh(2));
 
