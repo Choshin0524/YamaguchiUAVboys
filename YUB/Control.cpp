@@ -3,6 +3,15 @@
 
 Control::Control()
 {
+    leftAileronAngle = 90;
+    rightAileronAngle = 90;
+    elevatorAngle = 90;
+    rudderAngle = 90;
+    leftThrottle = 0;
+
+    PitchError[0] = 0.0f;
+    PitchError[1] = 0.0f;
+    PitchErrorIntegral = 0.0f;
 }
 
 void Control::Initialize()
@@ -34,14 +43,41 @@ void Control::Initialize()
     delay(1000);
 }
 
-void Control::MainControl(Sbus *sbus)
+void Control::MainControl(Sbus *sbus, const float& DeltaTime)
 {
-    // aileron, elevator, rudder
+    // early return if sbus nullptr
+    if(sbus == nullptr)
+    {
+        return;
+    }
+
+    // Auto control switch
+    uint16_t AutoControlMode = sbus->GetCh(7);
+    switch (AutoControlMode)
+    {
+    case 255:
+        IsAutoPitchControlActive = true;
+        break;
+    default:
+        IsAutoPitchControlActive = false;
+        break;
+    }
+
+    // aileron
     leftAileronAngle = map(sbus->GetCh(0), 225, 1820, 0, 180);
     rightAileronAngle = leftAileronAngle;
-    elevatorAngle = map(sbus->GetCh(1), 225, 1820, 0, 180);
+    // elevator
+    if (IsAutoPitchControlActive)
+    {
+        elevatorAngle += (int)AutoControl(SensorPitch, TargetAngle, DeltaTime, KP, KI, KD, PitchError, PitchErrorIntegral);
+    }
+    else
+    {
+        elevatorAngle = map(sbus->GetCh(1), 225, 1820, 0, 180);
+    }
+    // rudder
     rudderAngle = map(sbus->GetCh(3), 225, 1820, 0, 180);
-
+    // aileron offset
     uint16_t OffsetMode = sbus->GetCh(6);
     switch (OffsetMode)
     {
@@ -60,7 +96,6 @@ void Control::MainControl(Sbus *sbus)
     default:
         break;
     }
-
     // thrust
     leftThrottle = (sbus->GetCh(2));
 
@@ -69,7 +104,6 @@ void Control::MainControl(Sbus *sbus)
     servoOutput[1] = rightAileronAngle;
     servoOutput[2] = elevatorAngle;
     servoOutput[3] = rudderAngle;
-
     // output to servo
     for (int i = 0; i < SERVO_INDEX; i++)
     {
@@ -77,10 +111,26 @@ void Control::MainControl(Sbus *sbus)
     }
 }
 
-void Control::MotorControl()
+void Control::MotorControl() const
 {
     // allocate thrust to motor output
-    thrust = leftThrottle + 1000;
+    int thrust = leftThrottle + 1000;
     // output to motor
     ESCObj.writeMicroseconds(thrust);
+}
+
+float Control::AutoControl(const float& SensorValue, const float& TargetValue, const float& DeltaTime,
+                              const float& KP, const float& KI, const float& KD,
+                              float* Error, float& ErrorIntegral)
+{
+    float ProportionalOutput, IntegralOutput, DerivativeOutput;
+    Error[0] = Error[1];
+    Error[1] = SensorValue - TargetValue;
+    ErrorIntegral += (Error[1] + Error[0]) / 2.0 * DeltaTime;
+
+    ProportionalOutput = KP * Error[1];
+    IntegralOutput = KI * ErrorIntegral;
+    DerivativeOutput = KD * (Error[1] - Error[0]) / DeltaTime;
+
+    return (ProportionalOutput + IntegralOutput + DerivativeOutput);
 }

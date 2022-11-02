@@ -11,14 +11,24 @@ class Control
 public:
     Control();
     void Initialize();
-    void MainControl(Sbus* sbus);
-    void MotorControl();
+    void MainControl(Sbus* sbus, const float& DeltaTime);
+    void MotorControl() const;
+private:
+    // for auto control (PID)
+    float AutoControl(const float& SensorValue, const float& TargetValue, const float& DeltaTime,
+                     const float& KP, const float& KI, const float& KD,
+                     float* Error, float& ErrorIntegral);
+    bool IsAutoPitchControlActive;
+    // for pitch auto control
+    float PitchError[2];
+    float PitchErrorIntegral;
 private:
     Servo servoObj[SERVO_INDEX];
     Servo ESCObj;
     uint8_t servoOutputPin[SERVO_INDEX];
     uint8_t ESCOutputPin;
     uint16_t servoOutput[SERVO_INDEX];
+
 public:
     // int16_t ---> 16bits  int
     // left aileron control range: 0 - 180, flat: 90 CH1
@@ -32,7 +42,6 @@ public:
     
     // left throttle control range: 0 - 100, max power: 100 CH3
     uint16_t leftThrottle;
-    uint16_t thrust;
     
     // side-force Plate control !!not used!! CH4
     uint16_t sideForcePlate;
