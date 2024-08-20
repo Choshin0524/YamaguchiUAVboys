@@ -1,8 +1,9 @@
 #include "Sbus.h"
 #include "Arduino.h"
 
-Sbus::Sbus()
+Sbus::Sbus(bool toggleCheck)
 {
+    CheckOutput = toggleCheck;
 }
 
 bool Sbus::SbusRead(HardwareSerial &uart)
@@ -50,4 +51,17 @@ int16_t Sbus::GetCh(unsigned int chNum) const
 int16_t Sbus::GetOffset(unsigned int offsetNum) const
 {
     return this->offset[offsetNum];
+}
+
+void Sbus::DataMonitor() const
+{
+    if (CheckOutput)
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            Serial.print(GetCh(i));
+            Serial.print("--");
+        }
+        Serial.println();
+    }
 }
