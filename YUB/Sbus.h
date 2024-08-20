@@ -6,7 +6,7 @@ class Sbus
 {
 public:
     Sbus();
-    void SbusRead(HardwareSerial& uart);
+    bool SbusRead(HardwareSerial& uart);
     int16_t GetCh(unsigned int chNum) const;
     int16_t GetOffset(unsigned int offsetNum) const;
 private:

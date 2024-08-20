@@ -1,12 +1,12 @@
 #include <math.h>
 #include "Sbus.h"
 #include "Control.h"
-
 // initialize
-HardwareSerial SbusSerial(2); // rx:16, tx:17
+HardwareSerial SbusSerial(2);
 Sbus* sbus = new Sbus(); // futaba reciver
 Control* ctl = new Control(); // motor output
-// flags
+
+// ESC initialize flags
 bool ctlInitialized = false; // motor output initialize
 
 void setup(void)
@@ -23,7 +23,20 @@ void loop(void)
     ctlInitialized = true;
     Serial.println("Main motor initialized.");
   }
-  sbus->SbusRead(SbusSerial);
-  ctl->MainControl(sbus);
-  ctl->MotorControl();
+
+  if (sbus->SbusRead(SbusSerial))
+  {
+    ctl->MainControl(sbus);
+    ctl->MotorControl();
+    ctl->DataMonitor();
+  }
+/*  
+  for (int i = 0; i < 12; i++)
+  {
+    Serial.print(sbus->GetCh(i));
+    Serial.print("--");
+  }
+  
+  Serial.println();
+*/
 }
