@@ -1,4 +1,6 @@
 # YamaguchiUAVboys
-山口大学計測研究室　おもプロ２０２２
+山口大学計測研究室
 無人機制御プログラム
-using ESP32
+ESP32-WROOM
+Board Manager 2.0.17
+
