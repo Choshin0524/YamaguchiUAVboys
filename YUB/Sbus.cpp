@@ -39,10 +39,6 @@ bool Sbus::SbusRead(HardwareSerial &uart)
     chBuffer[9] = ((dataBuffer[13] >> 3 | dataBuffer[14] << 5) & 0x07FF);
     chBuffer[10] = ((dataBuffer[14] >> 6 | dataBuffer[15] << 2 | dataBuffer[16] << 10) & 0x07FF);
     chBuffer[11] = ((dataBuffer[16] >> 1 | dataBuffer[17] << 7) & 0x07FF);
-<<<<<<< HEAD
-=======
-    
->>>>>>> 6e90bda8fcb1d22af72ee86ef761169ab64f4a22
     return true;
 }
 
