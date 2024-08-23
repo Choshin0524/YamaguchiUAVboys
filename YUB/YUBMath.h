@@ -22,5 +22,10 @@ int ServoReverse(int input)
     {
         return 180 - input;
     }
+    else
+    {
+        return -1;
+    }
+    
 }
 #endif
