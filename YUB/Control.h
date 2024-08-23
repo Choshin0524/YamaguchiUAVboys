@@ -10,11 +10,11 @@
 class Control
 {
 public:
-    Control(bool toggleCheck);
+    Control();
     void Initialize();             // set motor output pin & initialize ESC
     void MainControl(Sbus *sbus);  // control servo motors
     void MotorControl(Sbus *sbus); // control thrust
-    void DataMonitor() const;
+    void DataMonitor(bool ifCheck) const;
 
 private:
     Servo servoObj[SERVO_INDEX];
@@ -44,8 +44,6 @@ private:
     // rudder control range: 0 - 180, flat: 90 CH5
     uint16_t rudderAngle;
 
-private:
-    bool CheckOutput;
 };
 
 #endif

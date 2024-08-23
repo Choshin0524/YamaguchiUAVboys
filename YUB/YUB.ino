@@ -3,8 +3,8 @@
 #include "Control.h"
 // initialize
 HardwareSerial SbusSerial(2);
-Sbus *sbus = new Sbus(false);     // futaba reciver :: constructor input = check sbus output
-Control *ctl = new Control(true); // motor output :: constructor input = check control output
+Sbus *sbus = new Sbus();     // futaba reciver
+Control *ctl = new Control(); // motor output
 
 // ESC initialize flag
 bool ctlInitialized = false; // motor output initialize
@@ -26,8 +26,8 @@ void loop(void)
 
   if (sbus->SbusRead(SbusSerial))
   {
-    sbus->DataMonitor();
-    ctl->DataMonitor();
+    sbus->DataMonitor(false);
+    ctl->DataMonitor(true);
     ctl->MainControl(sbus);
     ctl->MotorControl(sbus);
   }

@@ -2,9 +2,8 @@
 #include "Arduino.h"
 #include "YUBMath.h"
 
-Control::Control(bool toggleCheck)
+Control::Control()
 {
-    CheckOutput = toggleCheck;
 }
 
 void Control::Initialize()
@@ -28,7 +27,7 @@ void Control::Initialize()
         ESCObj[i].attach(ESCOutputPin[i]);
         ESCObj[i].writeMicroseconds(2694);
         delay(2000);
-        ESCObj[i].writeMicroseconds(1404);
+        ESCObj[i].writeMicroseconds(1352);
         delay(1500);
     }
 
@@ -45,8 +44,8 @@ void Control::MainControl(Sbus *sbus)
     // map(signal, min, max, minOut, minMax)
     leftAileronAngle = ServoMap(sbus->GetCh(0), 1696, 352, 0);
     rightAileronAngle = ServoReverse(leftAileronAngle);
-    elevatorAngle = ServoMap(sbus->GetCh(1), 1360, 688, 40);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1639, 352, 40);
+    elevatorAngle = ServoMap(sbus->GetCh(1), 1648, 373, 70);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 70);
     sideForcePlate = ServoReverse(rudderAngle);
 
     // allocate result to servo output
@@ -76,9 +75,9 @@ void Control::MotorControl(Sbus *sbus)
     }
 }
 
-void Control::DataMonitor() const
+void Control::DataMonitor(bool ifCheck) const
 {
-    if (CheckOutput)
+    if (ifCheck == true)
     {
         for (int i = 0; i < SERVO_INDEX; i++)
         {

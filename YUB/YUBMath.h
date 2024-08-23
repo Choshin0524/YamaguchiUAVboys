@@ -6,13 +6,9 @@ int ServoMap(int input, int inputMIN, int inputMAX, int offsetCut)
 {
     int mid = (inputMAX - inputMIN) / 2 + inputMIN;
 
-    if (inputMIN < inputMAX)
+    if (inputMIN != inputMAX)
     {
         return 90 + (input - mid) * (90 - offsetCut) / (mid - inputMIN);
-    }
-    else if (inputMIN > inputMAX)
-    {
-        return 90 - (input - mid) * (90 - offsetCut) / (mid - inputMIN);
     }
     else
     {
@@ -22,6 +18,9 @@ int ServoMap(int input, int inputMIN, int inputMAX, int offsetCut)
 
 int ServoReverse(int input)
 {
-    return 180 - input;
+    if (input >= 0 && input <= 180)
+    {
+        return 180 - input;
+    }
 }
 #endif

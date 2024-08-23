@@ -5,17 +5,16 @@
 class Sbus
 {
 public:
-    Sbus(bool toggleCheck);
+    Sbus();
     bool SbusRead(HardwareSerial &uart);
     int16_t GetCh(unsigned int chNum) const;
     int16_t GetOffset(unsigned int offsetNum) const;
-    void DataMonitor() const;
+    void DataMonitor(bool ifCheck) const;
 
 private:
     uint8_t dataBuffer[18];
     int16_t chBuffer[12];
     int16_t offset[8];
-    bool CheckOutput;
 };
 
 #endif
