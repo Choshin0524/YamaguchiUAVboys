@@ -30,15 +30,7 @@ void loop(void)
     Serial.println("Main motor initialized.");
   }
   sensor->SensorRead();
-  /*
-  Serial.print(sensor->GetRoll());
-  Serial.print(",");
-  Serial.print(sensor->GetPitch());
-  Serial.print(",");
-  Serial.print(sensor->GetYaw());
-  Serial.print(",");
-  Serial.println();*/
-  
+  sensor->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
     sbus->DataMonitor(false);

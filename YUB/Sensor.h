@@ -16,9 +16,12 @@ public:
     void SensorInitalize();
     void SensorCalibration();
     void SensorRead();
+    
     float GetRoll() const;
     float GetPitch() const;
     float GetYaw() const;
+    
+    void DataMonitor(bool ifCheck) const;
 };
 
 #endif

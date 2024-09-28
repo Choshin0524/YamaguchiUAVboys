@@ -40,11 +40,11 @@ void Sensor::SensorRead()
     pitch = euler.z();
     if (pitch >= 0)
     {
-      pitch = 180 - pitch;
+        pitch = 180 - pitch;
     }
     else if (pitch <= 0)
     {
-      pitch = -(pitch + 180);
+        pitch = -(pitch + 180);
     }
 }
 
@@ -61,4 +61,18 @@ float Sensor::GetPitch() const
 float Sensor::GetYaw() const
 {
     return yaw;
+}
+
+void Sensor::DataMonitor(bool ifCheck) const
+{
+    if (ifCheck == true)
+    {
+        Serial.print(roll);
+        Serial.print("  ");
+        Serial.print(pitch);
+        Serial.print("  ");
+        Serial.print(yaw);
+        Serial.print("  ");
+        Serial.println();
+    }
 }
