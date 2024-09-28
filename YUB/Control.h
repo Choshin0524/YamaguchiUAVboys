@@ -3,16 +3,18 @@
 #include "Arduino.h"
 #include "ESP32Servo.h"
 #include "Sbus.h"
+#include "Sensor.h"
 
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
+#define ALI_KP 1.1f
 
 class Control
 {
 public:
     Control();
     void Initialize();             // set motor output pin & initialize ESC
-    void MainControl(Sbus *sbus);  // control servo motors
+    void MainControl(Sbus *sbus, Sensor *sensor);  // control servo motors
     void MotorControl(Sbus *sbus); // control thrust
     void DataMonitor(bool ifCheck) const;
 
@@ -43,6 +45,13 @@ private:
 
     // rudder control range: 0 - 180, flat: 90 CH5
     uint16_t rudderAngle;
+
+    // auto roll checker
+    bool autoRoll;
+
+    // auto roll target angle default->0 deg
+    float rollAngleRef;
+    
 
 };
 

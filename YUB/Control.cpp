@@ -4,6 +4,7 @@
 
 Control::Control()
 {
+  rollAngleRef = 0;
 }
 
 void Control::Initialize()
@@ -38,16 +39,32 @@ void Control::Initialize()
     }
 }
 
-void Control::MainControl(Sbus *sbus)
+void Control::MainControl(Sbus *sbus, Sensor *sensor)
 {
+    if (sbus->GetCh(8) >= 1400)
+    {
+        autoRoll = true;
+    }
+    else
+    {
+        autoRoll = false;
+    }
+    
     // aileron, elevator, rudder, SFP  get
     // map(signal, min, max, minOut, minMax)
-    leftAileronAngle = ServoMap(sbus->GetCh(0), 1696, 352, 0);
-    rightAileronAngle = ServoReverse(leftAileronAngle);
+    leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
+    rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1648, 373, 70);
     rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 70);
     sideForcePlate = ServoReverse(rudderAngle);
 
+    //auto roll
+    if (autoRoll)
+    {
+        leftAileronAngle = ServoReverse(90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef)));
+        rightAileronAngle = leftAileronAngle;
+    }
+    
     // allocate result to servo output
     servoOutput[0] = leftAileronAngle;
     servoOutput[1] = rightAileronAngle;
@@ -79,6 +96,10 @@ void Control::DataMonitor(bool ifCheck) const
 {
     if (ifCheck == true)
     {
+        if (autoRoll)
+        {
+          Serial.print("ROLL AUTO ON   ");
+        }
         for (int i = 0; i < SERVO_INDEX; i++)
         {
             Serial.print(i + 1);
