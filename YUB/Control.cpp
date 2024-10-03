@@ -4,7 +4,8 @@
 
 Control::Control()
 {
-  rollAngleRef = 0;
+    rollAngleRef = 0.0f;
+    pitchAngleRef = 0.0f;
 }
 
 void Control::Initialize()
@@ -20,16 +21,17 @@ void Control::Initialize()
     ESCOutputPin[0] = 14;
     ESCOutputPin[1] = 12;
 
-    // attach brushless motor output pin
-
     // set esc min/max pulse width
     for (int i = 0; i < ESC_INDEX; i++)
     {
         ESCObj[i].attach(ESCOutputPin[i]);
+        Serial.print("Motor ");
+        Serial.print(i);
+        Serial.println("Initializing....");
         ESCObj[i].writeMicroseconds(2694);
         delay(2000);
         ESCObj[i].writeMicroseconds(1352);
-        delay(1500);
+        delay(2000);
     }
 
     // attach servo pin
@@ -41,7 +43,7 @@ void Control::Initialize()
 
 void Control::MainControl(Sbus *sbus, Sensor *sensor)
 {
-    if (sbus->GetCh(8) >= 1400)
+    if (sbus->GetCh(8) > 1400)
     {
         autoRoll = true;
     }
@@ -49,22 +51,36 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     {
         autoRoll = false;
     }
-    
+
+    if (sbus->GetCh(7) > 1400)
+    {
+        autoPitch = true;
+    }
+    else
+    {
+        autoPitch = false;
+    }
+
     // aileron, elevator, rudder, SFP  get
     // map(signal, min, max, minOut, minMax)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1648, 373, 70);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 70);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 55);
     sideForcePlate = ServoReverse(rudderAngle);
 
-    //auto roll
+    // auto roll
     if (autoRoll)
     {
         leftAileronAngle = ServoReverse(90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef)));
         rightAileronAngle = leftAileronAngle;
     }
-    
+    // auto pitch
+    if (autoPitch)
+    {
+        elevatorAngle = (90 - (ELE_KP * (sensor->GetPitch() - pitchAngleRef)));
+    }
+
     // allocate result to servo output
     servoOutput[0] = leftAileronAngle;
     servoOutput[1] = rightAileronAngle;
@@ -75,7 +91,14 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     // output to servo
     for (int i = 0; i < SERVO_INDEX; i++)
     {
-        servoObj[i].write(servoOutput[i]);
+        if (servoOutput[i] >= 0 && servoOutput[i] <= 180)
+        {
+            servoObj[i].write(servoOutput[i]);
+        }
+        else // exception prevent
+        {
+            servoObj[i].write(90);
+        }
     }
 }
 
@@ -98,7 +121,11 @@ void Control::DataMonitor(bool ifCheck) const
     {
         if (autoRoll)
         {
-          Serial.print("ROLL AUTO ON   ");
+            Serial.print("**ROLL AUTO ON**");
+        }
+        if (autoPitch)
+        {
+            Serial.print("**PITCH AUTO ON**");
         }
         for (int i = 0; i < SERVO_INDEX; i++)
         {

@@ -8,6 +8,7 @@
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
 #define ALI_KP 1.1f
+#define ELE_KP 0.8f
 
 class Control
 {
@@ -46,11 +47,13 @@ private:
     // rudder control range: 0 - 180, flat: 90 CH5
     uint16_t rudderAngle;
 
-    // auto roll checker
+    // auto roll,pitch checker
     bool autoRoll;
+    bool autoPitch;
 
-    // auto roll target angle default->0 deg
+    // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
+    float pitchAngleRef;
     
 
 };
