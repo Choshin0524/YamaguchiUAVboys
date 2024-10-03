@@ -43,7 +43,7 @@ void Control::Initialize()
 
 void Control::MainControl(Sbus *sbus, Sensor *sensor)
 {
-    if (sbus->GetCh(8) > 1400)
+    if (sbus->GetCh(8) == 1696)
     {
         autoRoll = true;
     }
@@ -52,7 +52,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         autoRoll = false;
     }
 
-    if (sbus->GetCh(7) > 1400)
+    if (sbus->GetCh(7) == 1696)
     {
         autoPitch = true;
     }

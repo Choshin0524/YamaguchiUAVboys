@@ -29,12 +29,11 @@ void loop(void)
     Initialized = true;
     Serial.println("Main motor initialized.");
   }
-  delay(500);
   sensor->SensorRead();
   sensor->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
-    sbus->DataMonitor(true);
+    sbus->DataMonitor(false);
     ctl->DataMonitor(false);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus);
