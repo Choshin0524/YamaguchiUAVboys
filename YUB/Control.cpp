@@ -5,7 +5,7 @@
 Control::Control()
 {
     rollAngleRef = 0.0f;
-    pitchAngleRef = 0.0f;
+    pitchAngleRef = -15.0f;
 }
 
 void Control::Initialize()
@@ -52,7 +52,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         autoRoll = false;
     }
 
-    if (sbus->GetCh(7) == 1696)
+    if (sbus->GetCh(11) == 1696)
     {
         autoPitch = true;
     }
@@ -136,4 +136,24 @@ void Control::DataMonitor(bool ifCheck) const
         }
         Serial.println();
     }
+}
+
+void Control::DataSDCardOutput(SDCardModule *sdc, File &file)
+{
+    sdc->WriteData(file,leftAileronAngle);
+    sdc->Write(file,",");
+    sdc->WriteData(file,rightAileronAngle);
+    sdc->Write(file,",");
+    sdc->WriteData(file, elevatorAngle);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, thrust[0]);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, thrust[1]);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, rudderAngle);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, autoRoll);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, autoPitch);
+    sdc->Write(file, "\n");
 }

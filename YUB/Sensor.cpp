@@ -8,7 +8,7 @@ Sensor::Sensor()
     bno.setExtCrystalUse(false);
 }
 
-void Sensor::SensorInitalize()
+void Sensor::SensorInitialize()
 {
     if (!bno.begin())
     {
@@ -75,4 +75,14 @@ void Sensor::DataMonitor(bool ifCheck) const
         Serial.print("  ");
         Serial.println();
     }
+}
+
+void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file)
+{
+    sdc->WriteData(file,  roll);
+    sdc->Write(file,  ",");
+    sdc->WriteData(file,  pitch);
+    sdc->Write(file,  ",");
+    sdc->WriteData(file,  yaw);
+    sdc->Write(file,  "\n");
 }

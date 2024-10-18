@@ -7,8 +7,8 @@
 
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
-#define ALI_KP 1.1f
-#define ELE_KP 0.8f
+#define ALI_KP 1.5f
+#define ELE_KP 1.1f
 
 class Control
 {
@@ -18,7 +18,7 @@ public:
     void MainControl(Sbus *sbus, Sensor *sensor);  // control servo motors
     void MotorControl(Sbus *sbus); // control thrust
     void DataMonitor(bool ifCheck) const;
-
+    void DataSDCardOutput(SDCardModule *sdc, File &file);
 private:
     Servo servoObj[SERVO_INDEX];
     uint8_t servoOutputPin[SERVO_INDEX];
