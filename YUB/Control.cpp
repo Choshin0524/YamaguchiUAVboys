@@ -138,8 +138,10 @@ void Control::DataMonitor(bool ifCheck) const
     }
 }
 
-void Control::DataSDCardOutput(SDCardModule *sdc, File &file)
+void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float CurSec)
 {
+    sdc->WriteData(file,  CurSec);
+    sdc->Write(file,  ",");
     sdc->WriteData(file,leftAileronAngle);
     sdc->Write(file,",");
     sdc->WriteData(file,rightAileronAngle);

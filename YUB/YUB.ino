@@ -15,6 +15,8 @@ SDCardModule *sdc = new SDCardModule(); //SDcard module
 
 // ESC initialize flag
 bool Initialized = false; // motor output initialize
+unsigned long currentMillis = 0;
+float currentSecond = 0;
 
 void setup(void)
 {
@@ -46,12 +48,14 @@ void loop(void)
     ctl->DataMonitor(false);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus);
+    currentMillis = millis();
+    currentSecond = (float)currentMillis / 1000;
     if(sbus->GetCh(10) == 1696)
     {
       File file1 = SD.open("/flightDataRPY.txt", FILE_APPEND);
-      sensor->DataSDCardOutput(sdc, file1);file1.close();
+      sensor->DataSDCardOutput(sdc, file1, currentSecond);file1.close();
       File file2 = SD.open("/flightDataCTL.txt", FILE_APPEND);
-      ctl->DataSDCardOutput(sdc, file2);file2.close();
+      ctl->DataSDCardOutput(sdc, file2, currentSecond);file2.close();
     }
   }
 }
