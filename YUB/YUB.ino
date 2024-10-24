@@ -45,7 +45,7 @@ void loop(void)
   if (sbus->SbusRead(SbusSerial))
   {
     sbus->DataMonitor(false);
-    ctl->DataMonitor(false);
+    ctl->DataMonitor(true);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus);
     currentMillis = millis();

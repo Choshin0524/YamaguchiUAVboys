@@ -50,7 +50,7 @@ private:
     // auto roll,pitch checker
     bool autoRoll;
     bool autoPitch;
-
+    bool autoThrust;
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
     float pitchAngleRef;

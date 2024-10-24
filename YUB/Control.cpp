@@ -43,6 +43,7 @@ void Control::Initialize()
 
 void Control::MainControl(Sbus *sbus, Sensor *sensor)
 {
+    // auto control ON/OFF
     if (sbus->GetCh(8) == 1696)
     {
         autoRoll = true;
@@ -51,7 +52,6 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     {
         autoRoll = false;
     }
-
     if (sbus->GetCh(11) == 1696)
     {
         autoPitch = true;
@@ -60,6 +60,15 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     {
         autoPitch = false;
     }
+    if (autoPitch && autoRoll && sbus->GetCh(9) == 1696)
+    {
+        autoThrust = true;
+    }
+    else
+    {
+        autoThrust = false;
+    }
+    
 
     // aileron, elevator, rudder, SFP  get
     // map(signal, min, max, minOut, minMax)
@@ -126,6 +135,10 @@ void Control::DataMonitor(bool ifCheck) const
         if (autoPitch)
         {
             Serial.print("**PITCH AUTO ON**");
+        }
+        if (autoThrust)
+        {
+            Serial.print("**THRUST AUTO ON**");
         }
         for (int i = 0; i < SERVO_INDEX; i++)
         {
