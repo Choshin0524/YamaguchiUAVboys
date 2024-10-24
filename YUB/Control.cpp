@@ -43,6 +43,11 @@ void Control::Initialize()
 
 void Control::MainControl(Sbus *sbus, Sensor *sensor)
 {
+    if (sbus || sensor == nullptr)
+    {
+        Serial.println("Sbus or sensor error.");
+        return;
+    }
     // auto control ON/OFF
     if (sbus->GetCh(8) == 1696)
     {
@@ -68,7 +73,6 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     {
         autoThrust = false;
     }
-    
 
     // aileron, elevator, rudder, SFP  get
     // map(signal, min, max, minOut, minMax)
@@ -113,6 +117,11 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
 
 void Control::MotorControl(Sbus *sbus)
 {
+    if (sbus == nullptr)
+    {
+        Serial.println("Sbus error.");
+        return;
+    }
     // allocate result to thrust
     thrust[0] = sbus->GetCh(2);
     // left thrust = right thrust (SET DIFFRENT IF NEED)
@@ -121,6 +130,14 @@ void Control::MotorControl(Sbus *sbus)
     for (int i = 0; i < ESC_INDEX; i++)
     {
         ESCObj[i].writeMicroseconds(thrust[i] + 1000);
+    }
+}
+
+void Control::MotorShutdown()
+{
+    for (int i = 0; i < ESC_INDEX; i++)
+    {
+        ESCObj[i].writeMicroseconds(0);
     }
 }
 
@@ -151,14 +168,19 @@ void Control::DataMonitor(bool ifCheck) const
     }
 }
 
-void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float CurSec)
+void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec)
 {
-    sdc->WriteData(file,  CurSec);
-    sdc->Write(file,  ",");
-    sdc->WriteData(file,leftAileronAngle);
-    sdc->Write(file,",");
-    sdc->WriteData(file,rightAileronAngle);
-    sdc->Write(file,",");
+    if (sdc == nullptr)
+    {
+        Serial.println("SD card error.");
+        return;
+    }
+    sdc->WriteData(file, CurSec);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, leftAileronAngle);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, rightAileronAngle);
+    sdc->Write(file, ",");
     sdc->WriteData(file, elevatorAngle);
     sdc->Write(file, ",");
     sdc->WriteData(file, thrust[0]);

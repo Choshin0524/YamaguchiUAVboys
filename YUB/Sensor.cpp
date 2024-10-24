@@ -77,14 +77,19 @@ void Sensor::DataMonitor(bool ifCheck) const
     }
 }
 
-void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float CurSec)
+void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec)
 {
-    sdc->WriteData(file,  CurSec);
-    sdc->Write(file,  ",");
-    sdc->WriteData(file,  roll);
-    sdc->Write(file,  ",");
-    sdc->WriteData(file,  pitch);
-    sdc->Write(file,  ",");
-    sdc->WriteData(file,  yaw);
-    sdc->Write(file,  "\n");
+    if (sdc == nullptr)
+    {
+        Serial.println("SD card error.");
+        return;
+    }
+    sdc->WriteData(file, CurSec);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, roll);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, pitch);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, yaw);
+    sdc->Write(file, "\n");
 }

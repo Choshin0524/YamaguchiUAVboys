@@ -10,9 +10,10 @@
 class Sensor
 {
 private:
-    float roll, pitch, yaw; //sensor output
-    float roll_co, pitch_co, yaw_co;  //sensor value compensation
+    float roll, pitch, yaw;          // sensor output
+    float roll_co, pitch_co, yaw_co; // sensor value compensation
     Adafruit_BNO055 bno;
+
 public:
     Sensor();
     void SensorInitialize();
@@ -22,9 +23,9 @@ public:
     float GetRoll() const;
     float GetPitch() const;
     float GetYaw() const;
-    
+
     void DataMonitor(bool ifCheck) const;
-    void DataSDCardOutput(SDCardModule *sdc, File &file, const float CurSec);
+    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec);
 };
 
 #endif

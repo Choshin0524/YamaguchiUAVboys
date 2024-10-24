@@ -2,7 +2,7 @@
 #define YUBMath_h
 #include "Arduino.h"
 
-int ServoMap(int input, int inputMIN, int inputMAX, int offsetCut)
+int ServoMap(const int &input, const int &inputMIN, const int &inputMAX, const int &offsetCut)
 {
     int mid = (inputMAX - inputMIN) / 2 + inputMIN;
 
@@ -16,7 +16,7 @@ int ServoMap(int input, int inputMIN, int inputMAX, int offsetCut)
     }
 }
 
-int ServoReverse(int input)
+int ServoReverse(const int &input)
 {
     if (input >= 0 && input <= 180)
     {
@@ -26,6 +26,5 @@ int ServoReverse(int input)
     {
         return -1;
     }
-    
 }
 #endif

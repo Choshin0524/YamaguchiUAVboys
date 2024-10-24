@@ -10,11 +10,9 @@ class SDCardModule
 {
 public:
     SDCardModule();
-    void SDCardInitialize(const char * message);
-    void Write(File &file, const char * message);
-    void WriteData(File &file, float data);
-
+    void SDCardInitialize(const char *message);
+    void Write(File &file, const char *message);
+    void WriteData(File &file, const float &data);
 };
-
 
 #endif
