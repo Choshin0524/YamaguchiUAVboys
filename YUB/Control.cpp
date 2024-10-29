@@ -43,7 +43,7 @@ void Control::Initialize()
 
 void Control::MainControl(Sbus *sbus, Sensor *sensor)
 {
-    if (sbus || sensor == nullptr)
+    if (sbus == nullptr || sensor == nullptr)
     {
         Serial.println("Sbus or sensor error.");
         return;
