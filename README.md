@@ -3,4 +3,5 @@
 無人機制御プログラム
 ESP32-WROOM
 Board Manager 2.0.10
-
+必要ライブラリ：
+Adafruit_BNO055.h
