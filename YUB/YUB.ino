@@ -2,6 +2,7 @@
 #include "Sbus.h"
 #include "Control.h"
 #include "Sensor.h"
+#include "Barometer.h"
 #include "SDCardModule.h"
 #include "SD.h"
 #include "FS.h"
@@ -9,6 +10,7 @@
 HardwareSerial SbusSerial(2);
 // Adafruit_BNO055 *bno = Adafruit_BNO055(55, 0x28); //bno055 sensor
 Sensor *sensor = new Sensor();
+Barometer *brm = new Barometer();
 Sbus *sbus = new Sbus();                // futaba reciver
 Control *ctl = new Control();           // motor output
 SDCardModule *sdc = new SDCardModule(); // SDcard module
@@ -32,6 +34,7 @@ void loop(void)
   {
     sensor->SensorInitialize();
     sensor->SensorCalibration();
+    brm->BarometerInitialize();
     sdc->SDCardInitialize("Starting...\n");
     ctl->Initialize();
     Initialized = true;
@@ -39,11 +42,12 @@ void loop(void)
   }
 
   sensor->SensorRead();
+  brm->BarometerRead();
   sensor->DataMonitor(false);
-
+  brm->DataMonitor(true);
   if (sbus->SbusRead(SbusSerial))
   {
-    sbus->DataMonitor(true);
+    sbus->DataMonitor(false);
     ctl->DataMonitor(false);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus);
@@ -52,7 +56,7 @@ void loop(void)
     if (sbus->GetCh(10) == 1696)
     {
       File file1 = SD.open("/flightDataRPY.txt", FILE_APPEND);
-      sensor->DataSDCardOutput(sdc, file1, currentSecond);
+      sensor->DataSDCardOutput(sdc, file1, currentSecond, brm->GetPressure());
       file1.close();
       File file2 = SD.open("/flightDataCTL.txt", FILE_APPEND);
       ctl->DataSDCardOutput(sdc, file2, currentSecond);

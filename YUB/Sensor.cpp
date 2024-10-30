@@ -77,7 +77,7 @@ void Sensor::DataMonitor(bool ifCheck) const
     }
 }
 
-void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec)
+void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec, const float &pressure)
 {
     if (sdc == nullptr)
     {
@@ -91,5 +91,7 @@ void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec
     sdc->WriteData(file, pitch);
     sdc->Write(file, ",");
     sdc->WriteData(file, yaw);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, pressure);
     sdc->Write(file, "\n");
 }
