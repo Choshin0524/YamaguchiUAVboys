@@ -6,9 +6,10 @@
 #include "SDCardModule.h"
 #include "SD.h"
 #include "FS.h"
-// initialize
+// HardwareSerial Initialize
 HardwareSerial SbusSerial(2);
-// Adafruit_BNO055 *bno = Adafruit_BNO055(55, 0x28); //bno055 sensor
+HardwareSerial SerialPort(1);
+
 Sensor *sensor = new Sensor();
 Barometer *brm = new Barometer();
 Sbus *sbus = new Sbus();                // futaba reciver
@@ -23,6 +24,7 @@ float currentSecond = 0;
 void setup(void)
 {
   SbusSerial.begin(100000, SERIAL_8E2);
+  SerialPort.begin(115200, SERIAL_8N1, 0, 13); 
   Serial.begin(115200);
   pinMode(21, INPUT_PULLUP); // SDA PULLUP
   pinMode(22, INPUT_PULLUP); // SCL PULLUP
@@ -40,11 +42,14 @@ void loop(void)
     Initialized = true;
     Serial.println("Main motor initialized.");
   }
-
+    if (SerialPort.available()) {
+        String receivedData = SerialPort.readStringUntil('\n');
+        Serial.println("Received: " + receivedData);
+    }
   sensor->SensorRead();
   brm->BarometerRead();
   sensor->DataMonitor(false);
-  brm->DataMonitor(true);
+  brm->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
     sbus->DataMonitor(false);
