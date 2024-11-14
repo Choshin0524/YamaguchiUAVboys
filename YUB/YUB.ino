@@ -8,7 +8,7 @@
 #include "FS.h"
 // HardwareSerial Initialize
 HardwareSerial SbusSerial(2);
-HardwareSerial SerialPort(1);
+HardwareSerial RosSerial(1);
 
 Sensor *sensor = new Sensor();
 Barometer *brm = new Barometer();
@@ -18,13 +18,14 @@ SDCardModule *sdc = new SDCardModule(); // SDcard module
 
 // ESC initialize flag
 bool Initialized = false; // motor output initialize
+byte ifInRegion = 0;
 unsigned long currentMillis = 0;
 float currentSecond = 0;
 
 void setup(void)
 {
   SbusSerial.begin(100000, SERIAL_8E2);
-  SerialPort.begin(115200, SERIAL_8N1, 0, 13); 
+  RosSerial.begin(115200, SERIAL_8N1, 0, 13);
   Serial.begin(115200);
   pinMode(21, INPUT_PULLUP); // SDA PULLUP
   pinMode(22, INPUT_PULLUP); // SCL PULLUP
@@ -42,10 +43,21 @@ void loop(void)
     Initialized = true;
     Serial.println("Main motor initialized.");
   }
-    if (SerialPort.available()) {
-        String receivedData = SerialPort.readStringUntil('\n');
-        Serial.println("Received: " + receivedData);
-    }
+
+  //Ros Serial Receive
+  if (RosSerial.available())
+  {
+    ifInRegion = RosSerial.read();
+  }
+  if (ifInRegion == 1)
+  
+  {
+    Serial.println("In Region!");
+  }
+  else
+  {
+    Serial.println("NOT In Region!");
+  }
   sensor->SensorRead();
   brm->BarometerRead();
   sensor->DataMonitor(false);
