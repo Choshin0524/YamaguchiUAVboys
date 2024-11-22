@@ -25,7 +25,7 @@ public:
     float GetYaw() const;
 
     void DataMonitor(bool ifCheck) const;
-    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec, const float &pressure);
+    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec);
 };
 
 #endif

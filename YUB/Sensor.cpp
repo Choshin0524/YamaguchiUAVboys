@@ -23,13 +23,6 @@ void Sensor::SensorInitialize()
 
 void Sensor::SensorCalibration()
 {
-    /*roll_co, pitch_co, yaw_co = 0.0f;
-    for (int i = 0; i < 10; i++)
-    {
-        SensorRead();
-        delay(50);
-    }
-    yaw_co = yaw;*/
 }
 
 void Sensor::SensorRead()
@@ -77,7 +70,7 @@ void Sensor::DataMonitor(bool ifCheck) const
     }
 }
 
-void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec, const float &pressure)
+void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec)
 {
     if (sdc == nullptr)
     {
@@ -91,7 +84,5 @@ void Sensor::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec
     sdc->WriteData(file, pitch);
     sdc->Write(file, ",");
     sdc->WriteData(file, yaw);
-    sdc->Write(file, ",");
-    sdc->WriteData(file, pressure);
     sdc->Write(file, "\n");
 }
