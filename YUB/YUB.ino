@@ -45,7 +45,7 @@ void loop(void)
   }
 
   //Ros Serial Receive
-  /*if (RosSerial.available())
+  if (RosSerial.available())
   {
     ifInRegion = RosSerial.read();
   }
@@ -56,7 +56,7 @@ void loop(void)
   else
   {
     Serial.println("NOT In Region!");
-  }*/
+  }
   sensor->SensorRead();
   brm->BarometerRead();
   sensor->DataMonitor(true);
