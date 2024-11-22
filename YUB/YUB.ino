@@ -45,22 +45,21 @@ void loop(void)
   }
 
   //Ros Serial Receive
-  if (RosSerial.available())
+  /*if (RosSerial.available())
   {
     ifInRegion = RosSerial.read();
   }
   if (ifInRegion == 1)
-  
   {
     Serial.println("In Region!");
   }
   else
   {
     Serial.println("NOT In Region!");
-  }
+  }*/
   sensor->SensorRead();
   brm->BarometerRead();
-  sensor->DataMonitor(false);
+  sensor->DataMonitor(true);
   brm->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
