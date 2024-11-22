@@ -28,7 +28,7 @@ void Control::Initialize()
         Serial.print("Motor ");
         Serial.print(i);
         Serial.println("Initializing....");
-        ESCObj[i].writeMicroseconds(2694);
+        ESCObj[i].writeMicroseconds(2696);
         delay(2000);
         ESCObj[i].writeMicroseconds(1352);
         delay(2000);
@@ -78,7 +78,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     // map(signal, min, max, minOut, minMax)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
-    elevatorAngle = ServoMap(sbus->GetCh(1), 1648, 373, 70);
+    elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
     rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 55);
     sideForcePlate = ServoReverse(rudderAngle);
 

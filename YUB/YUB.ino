@@ -7,7 +7,7 @@
 #include "FS.h"
 // HardwareSerial Initialize
 HardwareSerial SbusSerial(2);
-// HardwareSerial RosSerial(1);
+HardwareSerial RosSerial(1);
 
 Sensor *sensor = new Sensor();
 Sbus *sbus = new Sbus();                // futaba reciver
@@ -23,7 +23,7 @@ float currentSecond = 0;
 void setup(void)
 {
   SbusSerial.begin(100000, SERIAL_8E2);
-  //RosSerial.begin(115200, SERIAL_8N1, 0, 13);
+  RosSerial.begin(115200, SERIAL_8N1, 0, 13);
   Serial.begin(115200);
   pinMode(21, INPUT_PULLUP); // SDA PULLUP
   pinMode(22, INPUT_PULLUP); // SCL PULLUP
@@ -62,7 +62,7 @@ void loop(void)
   sensor->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
-    sbus->DataMonitor(false);
+    sbus->DataMonitor(true);
     ctl->DataMonitor(false);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus);
