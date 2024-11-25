@@ -6,6 +6,10 @@ Control::Control()
 {
     rollAngleRef = 0.0f;
     pitchAngleRef = -15.0f;
+    autoRoll = false;
+    autoPitch = false;
+    autoThrust = false;
+    autoYaw = false;
 }
 
 void Control::Initialize()
@@ -94,6 +98,13 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         elevatorAngle = (90 - (ELE_KP * (sensor->GetPitch() - pitchAngleRef)));
     }
 
+    if (autoYaw)
+    {
+        rudderAngle = 110;
+        sideForcePlate = 70;
+
+    }
+    
     // allocate result to servo output
     servoOutput[0] = leftAileronAngle;
     servoOutput[1] = rightAileronAngle;
@@ -157,6 +168,10 @@ void Control::DataMonitor(bool ifCheck) const
         {
             Serial.print("**THRUST AUTO ON**");
         }
+        if (autoYaw)
+        {
+            Serial.print("**YAW AUTO ON**");
+        }
         for (int i = 0; i < SERVO_INDEX; i++)
         {
             Serial.print(i + 1);
@@ -192,5 +207,12 @@ void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSe
     sdc->WriteData(file, autoRoll);
     sdc->Write(file, ",");
     sdc->WriteData(file, autoPitch);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, autoYaw);
     sdc->Write(file, "\n");
+}
+
+void Control::ActiveAutoYaw(bool ifActive)
+{
+    autoYaw = ifActive;
 }

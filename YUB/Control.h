@@ -20,7 +20,7 @@ public:
     void MotorShutdown();                         // shutdown motor when no sbus input
     void DataMonitor(bool ifCheck) const;
     void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec);
-
+    void ActiveAutoYaw(bool ifActive);
 private:
     Servo servoObj[SERVO_INDEX];
     uint8_t servoOutputPin[SERVO_INDEX];
@@ -53,6 +53,8 @@ private:
     bool autoRoll;
     bool autoPitch;
     bool autoThrust;
+    bool autoYaw;
+
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
     float pitchAngleRef;

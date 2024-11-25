@@ -6,9 +6,9 @@
 #include "SDCardModule.h"
 #include "SD.h"
 #include "FS.h"
+#include "SoftwareSerial.h"
 // HardwareSerial Initialize
 HardwareSerial SbusSerial(2);
-HardwareSerial RosSerial(1);
 
 Sensor *sensor = new Sensor();
 Barometer *brm = new Barometer();
@@ -21,6 +21,8 @@ bool Initialized = false; // motor output initialize
 byte ifInRegion = 0;
 unsigned long currentMillis = 0;
 float currentSecond = 0;
+
+HardwareSerial RosSerial(1);
 
 void setup(void)
 {
@@ -36,7 +38,7 @@ void loop(void)
   if (!Initialized)
   {
     sensor->SensorInitialize();
-    sensor->SensorCalibration();
+    sensor->SensorCalibration();  
     brm->BarometerInitialize();
     sdc->SDCardInitialize("Starting...\n");
     ctl->Initialize();
@@ -45,26 +47,33 @@ void loop(void)
   }
 
   //Ros Serial Receive
-  if (RosSerial.available())
+  if (RosSerial.available() > 0)
   {
     ifInRegion = RosSerial.read();
+    yield();
+  }
+  else
+  {
+    ifInRegion = 0;
   }
   if (ifInRegion == 1)
   {
     Serial.println("In Region!");
+    ctl->ActiveAutoYaw(true);
   }
   else
   {
     Serial.println("NOT In Region!");
+    ctl->ActiveAutoYaw(false);
   }
   sensor->SensorRead();
   brm->BarometerRead();
-  sensor->DataMonitor(true);
+  sensor->DataMonitor(false);
   brm->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
     sbus->DataMonitor(false);
-    ctl->DataMonitor(false);
+    ctl->DataMonitor(true);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus);
     currentMillis = millis();
