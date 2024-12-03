@@ -8,7 +8,8 @@
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
 #define ALI_KP 2.0f
-#define ELE_KP 1.0f
+#define ELE_KP 1.8f
+#define RUD_KP 0.5f
 
 class Control
 {
@@ -52,12 +53,20 @@ private:
     // auto roll,pitch checker
     bool autoRoll;
     bool autoPitch;
-    bool autoThrust;
-    bool autoYaw;
+    bool autoTakeoffYaw;
+
+    // take-off phase
+    bool idle;
+    bool takeoff;
+    bool takeoffInit;
+    bool cruise;
+    float currentTime;
+    float takeoffTime;
 
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
     float pitchAngleRef;
+    float yawRateRef;
 };
 
 #endif

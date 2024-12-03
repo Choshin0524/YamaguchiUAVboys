@@ -8,6 +8,7 @@
 #include "FS.h"
 #include "SoftwareSerial.h"
 // HardwareSerial Initialize
+// Sbus 352-1024-1696
 HardwareSerial SbusSerial(2);
 
 Sensor *sensor = new Sensor();
@@ -58,18 +59,18 @@ void loop(void)
   }
   if (ifInRegion == 1)
   {
-    Serial.println("In Region!");
+    //Serial.println("In Region!");
     ctl->ActiveAutoYaw(true);
   }
   else
   {
-    Serial.println("NOT In Region!");
+    //Serial.println("NOT In Region!");
     ctl->ActiveAutoYaw(false);
   }
   sensor->SensorRead();
   brm->BarometerRead();
   sensor->DataMonitor(false);
-  brm->DataMonitor(false);
+  //brm->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
     sbus->DataMonitor(false);
@@ -78,7 +79,7 @@ void loop(void)
     ctl->MotorControl(sbus);
     currentMillis = millis();
     currentSecond = (float)currentMillis / 1000;
-    if (sbus->GetCh(10) == 1696)
+    if (sbus->GetCh(7) == 1696)
     {
       File file1 = SD.open("/flightDataRPY.txt", FILE_APPEND);
       sensor->DataSDCardOutput(sdc, file1, currentSecond, brm->GetPressure());
