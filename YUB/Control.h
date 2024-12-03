@@ -55,6 +55,9 @@ private:
     bool autoPitch;
     bool autoTakeoffYaw;
 
+    // ros receive test
+    bool IfRosTrue;
+
     // take-off phase
     bool idle;
     bool takeoff;

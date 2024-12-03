@@ -11,6 +11,7 @@ Control::Control()
     autoPitch = false;
     autoTakeoffYaw = false;
 
+    IfRosTrue = false;
     idle = false;
     takeoff = false;
     takeoffInit = false;
@@ -77,19 +78,19 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         autoTakeoffYaw = false;
 
     // THRUST
-    if (autoPitch && autoRoll && sbus->GetCh(10) == 352) //switch->1
+    if (autoPitch && autoRoll && sbus->GetCh(10) == 352) // switch->1
     {
         idle = false;
         takeoff = false;
         cruise = false;
     }
-    else if (autoPitch && autoRoll && sbus->GetCh(10) == 1024) //switch->2
+    else if (autoPitch && autoRoll && sbus->GetCh(10) == 1024) // switch->2
     {
         idle = true;
         takeoff = false;
         cruise = false;
     }
-    else if (autoPitch && autoRoll && sbus->GetCh(10) == 1696) //switch->3
+    else if (autoPitch && autoRoll && sbus->GetCh(10) == 1696) // switch->3
     {
         idle = false;
         currentTime = (float)millis() / 1000;
@@ -180,7 +181,7 @@ void Control::MotorControl(Sbus *sbus)
     // left thrust = right thrust (SET DIFFRENT IF NEED)
     thrust[1] = thrust[0];
     // output to motor
-    
+
     // take-off
     if (idle)
     {
@@ -197,7 +198,6 @@ void Control::MotorControl(Sbus *sbus)
         thrust[0] = 1100;
         thrust[1] = 1100;
     }
-    
 
     for (int i = 0; i < ESC_INDEX; i++)
     {
@@ -278,9 +278,12 @@ void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSe
     sdc->WriteData(file, autoPitch);
     sdc->Write(file, ",");
     sdc->WriteData(file, autoTakeoffYaw);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, IfRosTrue);
     sdc->Write(file, "\n");
 }
 
 void Control::ActiveAutoYaw(bool ifActive)
 {
+    IfRosTrue = ifActive;
 }
