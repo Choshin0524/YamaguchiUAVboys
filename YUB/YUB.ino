@@ -13,7 +13,7 @@ HardwareSerial SbusSerial(2);
 
 Sensor *sensor = new Sensor();
 Barometer *brm = new Barometer();
-Sbus *sbus = new Sbus();                // futaba reciver
+Sbus *sbus = new Sbus();                // futaba receiver
 Control *ctl = new Control();           // motor output
 SDCardModule *sdc = new SDCardModule(); // SDcard module
 

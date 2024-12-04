@@ -1,6 +1,7 @@
 #include "Control.h"
 #include "Arduino.h"
 #include "YUBMath.h"
+#include <math.h>
 
 Control::Control()
 {
@@ -72,11 +73,6 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         autoPitch = true;
     else
         autoPitch = false;
-    // TAKEOFFYAW
-    if (sbus->GetCh(6) == 1696)
-        autoTakeoffYaw = true;
-    else
-        autoTakeoffYaw = false;
 
     // THRUST
     if (autoPitch && autoRoll && sbus->GetCh(10) == 352) // switch->1
@@ -100,6 +96,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
             takeoff = true;
             takeoffTime = currentTime;
             takeoffInit = true;
+            autoTakeoffYaw = true;
         }
         if (currentTime - takeoffTime >= 1.0f)
         {
@@ -180,7 +177,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm)
     }
     // allocate result to thrust
     thrust[0] = sbus->GetCh(2);
-    // left thrust = right thrust (SET DIFFRENT IF NEED)
+    // left thrust = right thrust (SET DIFFERENT IF NEED)
     thrust[1] = thrust[0];
     // output to motor
 
@@ -198,7 +195,9 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm)
     }
     else if (cruise)
     {
-        thrust[0] = 1100 + THU_KP * (brm->GetPressure() - (takeoffPressure - 0.25));
+        float fixedPressure = brm->GetPressure();
+        fixedPressure = fixedPressure - (-1.38 * thrust[0] * pow(10, -4) + 4.4 * pow(thrust[0], 2) * pow(10, -7) - 1.3 * pow(thrust[0], 3) * pow(10, -10));
+        thrust[0] = 1100 + THU_KP * (fixedPressure - (takeoffPressure - 0.25));
         thrust[1] = thrust[0];
     }
 
