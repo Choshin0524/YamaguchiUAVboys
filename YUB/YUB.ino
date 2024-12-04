@@ -76,7 +76,7 @@ void loop(void)
     sbus->DataMonitor(false);
     ctl->DataMonitor(true);
     ctl->MainControl(sbus, sensor);
-    ctl->MotorControl(sbus);
+    ctl->MotorControl(sbus, brm);
     currentMillis = millis();
     currentSecond = (float)currentMillis / 1000;
     if (sbus->GetCh(7) == 1696)

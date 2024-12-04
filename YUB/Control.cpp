@@ -18,6 +18,7 @@ Control::Control()
     cruise = false;
     currentTime = 0.0f;
     takeoffTime = 0.0f;
+    takeoffPressure = 0.0f;
 }
 
 void Control::Initialize()
@@ -100,7 +101,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
             takeoffTime = currentTime;
             takeoffInit = true;
         }
-        if (currentTime - takeoffTime >= 2.0f)
+        if (currentTime - takeoffTime >= 1.0f)
         {
             takeoff = false;
             cruise = true;
@@ -146,6 +147,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         {
             rudderAngle = 140;
         }
+        sideForcePlate = ServoReverse(rudderAngle);
     }
 
     // allocate result to servo output
@@ -169,7 +171,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     }
 }
 
-void Control::MotorControl(Sbus *sbus)
+void Control::MotorControl(Sbus *sbus, Barometer *brm)
 {
     if (sbus == nullptr)
     {
@@ -187,6 +189,7 @@ void Control::MotorControl(Sbus *sbus)
     {
         thrust[0] = 690;
         thrust[1] = 690;
+        takeoffPressure = brm->GetPressure();
     }
     else if (takeoff)
     {
@@ -195,8 +198,8 @@ void Control::MotorControl(Sbus *sbus)
     }
     else if (cruise)
     {
-        thrust[0] = 1100;
-        thrust[1] = 1100;
+        thrust[0] = 1100 + THU_KP * (brm->GetPressure() - (takeoffPressure - 0.25));
+        thrust[1] = thrust[0];
     }
 
     for (int i = 0; i < ESC_INDEX; i++)

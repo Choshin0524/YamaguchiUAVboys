@@ -4,20 +4,21 @@
 #include "ESP32Servo.h"
 #include "Sbus.h"
 #include "Sensor.h"
+#include "Barometer.h"
 
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
 #define ALI_KP 2.0f
 #define ELE_KP 1.8f
 #define RUD_KP 0.5f
-
+#define THU_KP 10000.0f
 class Control
 {
 public:
     Control();
     void Initialize();                            // set motor output pin & initialize ESC
     void MainControl(Sbus *sbus, Sensor *sensor); // control servo motors
-    void MotorControl(Sbus *sbus);                // control thrust
+    void MotorControl(Sbus *sbus, Barometer *brm);                // control thrust
     void MotorShutdown();                         // shutdown motor when no sbus input
     void DataMonitor(bool ifCheck) const;
     void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec);
@@ -65,6 +66,7 @@ private:
     bool cruise;
     float currentTime;
     float takeoffTime;
+    float takeoffPressure;
 
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
