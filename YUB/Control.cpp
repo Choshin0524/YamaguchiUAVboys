@@ -200,7 +200,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm)
     {
         float fixedPressure = brm->GetPressure();
         fixedPressure = fixedPressure - (-1.38 * thrust[0] * pow(10, -4) + 4.4 * pow(thrust[0], 2) * pow(10, -7) - 1.3 * pow(thrust[0], 3) * pow(10, -10));
-        thrust[0] = thrust + THU_KP * (fixedPressure - (takeoffPressure - 0.20));
+        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure - 0.20));
         thrust[1] = thrust[0];
     }
 
