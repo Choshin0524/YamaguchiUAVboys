@@ -6,7 +6,7 @@
 Control::Control()
 {
     rollAngleRef = 0.0f;
-    pitchAngleRef = -25.0f;
+    pitchAngleRef = -20.0f;
     yawRateRef = 0.0f;
     autoRoll = false;
     autoPitch = false;
@@ -193,14 +193,14 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm)
     }
     else if (takeoff)
     {
-        thrust[0] = 1600;
-        thrust[1] = 1600;
+        thrust[0] = 1400;
+        thrust[1] = 1400;
     }
     else if (cruise)
     {
         float fixedPressure = brm->GetPressure();
-        fixedPressure = fixedPressure - (-1.38 * thrust[0] * pow(10, -4) + 4.4 * pow(thrust[0], 2) * pow(10, -7) - 1.3 * pow(thrust[0], 3) * pow(10, -10));
-        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure - 0.20));
+        //fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
+        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure - 0.25));
         thrust[1] = thrust[0];
     }
 
@@ -253,6 +253,7 @@ void Control::DataMonitor(bool ifCheck) const
             Serial.print(servoOutput[i]);
             Serial.print(" -- ");
         }
+        Serial.print(thrust[0]);
         Serial.println();
     }
 }

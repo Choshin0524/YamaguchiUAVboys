@@ -11,7 +11,7 @@
 #define ALI_KP 2.0f
 #define ELE_KP 1.8f
 #define RUD_KP 0.5f
-#define THU_KP 500.0f
+#define THU_KP 2800.0f
 class Control
 {
 public:
