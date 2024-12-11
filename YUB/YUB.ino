@@ -21,7 +21,7 @@ SDCardModule *sdc = new SDCardModule(); // SDcard module
 bool Initialized = false; // motor output initialize
 byte ifInRegion = 0;
 unsigned long currentMillis = 0;
-float currentSecond = 0;
+float currentSecond = 0.0f;
 
 HardwareSerial RosSerial(1);
 
@@ -70,7 +70,7 @@ void loop(void)
   sensor->SensorRead();
   brm->BarometerRead();
   sensor->DataMonitor(false);
-  //brm->DataMonitor(false);
+  brm->DataMonitor(false);
   if (sbus->SbusRead(SbusSerial))
   {
     sbus->DataMonitor(false);
