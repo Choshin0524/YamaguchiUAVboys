@@ -168,7 +168,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     }
 }
 
-void Control::MotorControl(Sbus *sbus, Barometer *brm)
+void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
 {
     if (sbus == nullptr)
     {
