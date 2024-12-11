@@ -171,8 +171,11 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     }
 }
 
-void Control::MotorControl(Sbus *sbus, Barometer *brm)
+void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
 {
+    ROSaltitude = altitude;
+
+
     if (sbus == nullptr)
     {
         Serial.println("Sbus error.");
@@ -286,6 +289,8 @@ void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSe
     sdc->WriteData(file, autoTakeoffYaw);
     sdc->Write(file, ",");
     sdc->WriteData(file, IfRosTrue);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, ROSaltitude);
     sdc->Write(file, "\n");
 }
 

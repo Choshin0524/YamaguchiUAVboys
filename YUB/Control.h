@@ -18,7 +18,7 @@ public:
     Control();
     void Initialize();                            // set motor output pin & initialize ESC
     void MainControl(Sbus *sbus, Sensor *sensor); // control servo motors
-    void MotorControl(Sbus *sbus, Barometer *brm);                // control thrust
+    void MotorControl(Sbus *sbus, Barometer *brm, float altitude);                // control thrust
     void MotorShutdown();                         // shutdown motor when no sbus input
     void DataMonitor(bool ifCheck) const;
     void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec);
@@ -58,7 +58,7 @@ private:
 
     // ros receive test
     bool IfRosTrue;
-
+    float ROSaltitude;
     // take-off phase
     bool idle;
     bool takeoff;
@@ -67,7 +67,7 @@ private:
     float currentTime;
     float takeoffTime;
     float takeoffPressure;
-
+    
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
     float pitchAngleRef;

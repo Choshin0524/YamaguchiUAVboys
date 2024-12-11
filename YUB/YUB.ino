@@ -24,6 +24,8 @@ unsigned long currentMillis = 0;
 float currentSecond = 0.0f;
 
 HardwareSerial RosSerial(1);
+String receivedData;
+float altitude = 0.0f;
 
 void setup(void)
 {
@@ -39,7 +41,7 @@ void loop(void)
   if (!Initialized)
   {
     sensor->SensorInitialize();
-    sensor->SensorCalibration();  
+    sensor->SensorCalibration();
     brm->BarometerInitialize();
     sdc->SDCardInitialize("Starting...\n");
     ctl->Initialize();
@@ -47,24 +49,28 @@ void loop(void)
     Serial.println("Main motor initialized.");
   }
 
-  //Ros Serial Receive
+  // Ros Serial Receive
   if (RosSerial.available() > 0)
   {
-    ifInRegion = RosSerial.read();
-    yield();
-  }
-  else
-  {
-    ifInRegion = 0;
+    char incomingByte;
+    while (incomingByte != '\n')
+    {
+      incomingByte = RosSerial.read();
+      receivedData += incomingByte;
+    }
+    altitude = receivedData.toFloat();
+    Serial.print("Received altitude: ");
+    Serial.println(altitude);
+    receivedData = "";
   }
   if (ifInRegion == 1)
   {
-    //Serial.println("In Region!");
+    // Serial.println("In Region!");
     ctl->ActiveAutoYaw(true);
   }
   else
   {
-    //Serial.println("NOT In Region!");
+    // Serial.println("NOT In Region!");
     ctl->ActiveAutoYaw(false);
   }
   sensor->SensorRead();
@@ -76,7 +82,7 @@ void loop(void)
     sbus->DataMonitor(false);
     ctl->DataMonitor(true);
     ctl->MainControl(sbus, sensor);
-    ctl->MotorControl(sbus, brm);
+    ctl->MotorControl(sbus, brm, altitude);
     currentMillis = millis();
     currentSecond = (float)currentMillis / 1000;
     if (sbus->GetCh(7) == 1696)
