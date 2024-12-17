@@ -58,9 +58,12 @@ void loop(void)
       incomingByte = RosSerial.read();
       receivedData += incomingByte;
     }
+    if (receivedData.toFloat() > -100.0f) // if altitude ok
+    {
     altitude = receivedData.toFloat();
-    Serial.print("Received altitude: ");
-    Serial.println(altitude);
+    }
+    //Serial.print("Received altitude: ");
+    //Serial.println(altitude);
     receivedData = "";
   }
   if (ifInRegion == 1)

@@ -8,8 +8,9 @@
 
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
-#define ALI_KP 2.0f
-#define ELE_KP 1.8f
+#define ALI_KP 2.5f
+#define THU_RUD_KP 5.0f
+#define ELE_KP 2.0f
 #define RUD_KP 0.5f
 #define THU_KP 500.0f
 class Control
@@ -34,13 +35,13 @@ private:
 private:
     // int16_t ---> 16bits  int
     // left aileron control range: 0 - 180, flat: 90 CH1
-    uint16_t leftAileronAngle;
+    int leftAileronAngle;
 
     // right aileron control range: 0 - 180, flat: 90 CH1
-    uint16_t rightAileronAngle;
+    int rightAileronAngle;
 
     // elevator control range: 0 - 180, flat: 90 CH2
-    uint16_t elevatorAngle;
+    int elevatorAngle;
 
     // left+right throttle control range: 0 - 100, max power: 100 CH3
     uint16_t thrust[2];
@@ -67,6 +68,7 @@ private:
     float currentTime;
     float takeoffTime;
     float takeoffPressure;
+    float prevPressure;
     
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
