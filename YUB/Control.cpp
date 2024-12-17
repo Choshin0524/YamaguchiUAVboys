@@ -20,6 +20,7 @@ Control::Control()
     currentTime = 0.0f;
     takeoffTime = 0.0f;
     takeoffPressure = 0.0f;
+    prevPressure = 1000.0f;
 }
 
 void Control::Initialize()
@@ -113,13 +114,22 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 55);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 58);
     sideForcePlate = ServoReverse(rudderAngle);
 
     // auto roll
     if (autoRoll)
     {
-        leftAileronAngle = ServoReverse(90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef)));
+        leftAileronAngle = 90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef));
+        if (leftAileronAngle <= 0)
+        {
+          leftAileronAngle = 0;
+        }
+        if (leftAileronAngle >= 180)
+        {
+          leftAileronAngle = 180;
+        }
+        leftAileronAngle = ServoReverse(leftAileronAngle);
         rightAileronAngle = leftAileronAngle;
     }
     // auto pitch
@@ -134,6 +144,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         {
             elevatorAngle = 150;
         }
+        elevatorAngle = ServoReverse(elevatorAngle);
     }
 
     if (autoTakeoffYaw)
@@ -171,8 +182,10 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     }
 }
 
-void Control::MotorControl(Sbus *sbus, Barometer *brm)
+void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
 {
+    ROSaltitude = altitude;
+
     if (sbus == nullptr)
     {
         Serial.println("Sbus error.");
@@ -190,6 +203,15 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm)
         thrust[0] = 690;
         thrust[1] = 690;
         takeoffPressure = brm->GetPressure();
+        // set to prev pressure when barometer data wrong
+        if (takeoffPressure > 950.0f && takeoffPressure < 1100.0f)
+        {
+            prevPressure = takeoffPressure;
+        }
+        else
+        {
+            takeoffPressure = prevPressure;
+        }
     }
     else if (takeoff)
     {
@@ -199,8 +221,17 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm)
     else if (cruise)
     {
         float fixedPressure = brm->GetPressure();
-        //fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
-        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27));
+        // set to prev pressure when barometer data wrong
+        if (fixedPressure > 950.0f && fixedPressure < 1100.0f)
+        {
+            prevPressure = fixedPressure;
+        }
+        else
+        {
+            fixedPressure = prevPressure;
+        }
+        // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
+        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
         thrust[1] = thrust[0];
     }
 
@@ -286,6 +317,8 @@ void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSe
     sdc->WriteData(file, autoTakeoffYaw);
     sdc->Write(file, ",");
     sdc->WriteData(file, IfRosTrue);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, ROSaltitude);
     sdc->Write(file, "\n");
 }
 
