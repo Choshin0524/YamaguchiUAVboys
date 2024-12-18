@@ -10,9 +10,9 @@
 #define ESC_INDEX 2
 #define ALI_KP 2.5f
 #define THU_RUD_KP 5.0f
-#define ELE_KP 2.0f
-#define RUD_KP 0.5f
-#define THU_KP 120.0f
+#define ELE_KP 2.5f
+#define RUD_KP 0.4f
+#define THU_KP 150.0f
 class Control
 {
 public:

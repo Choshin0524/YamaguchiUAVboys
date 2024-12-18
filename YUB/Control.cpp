@@ -18,7 +18,7 @@ Control::Control()
     takeoffInit = false;
     cruise = false;
 
-    altitudeRef = 2.5f;
+    altitudeRef = 3.0f;
 
     currentTime = 0.0f;
     takeoffTime = 0.0f;
@@ -102,6 +102,8 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
             takeoffTime = currentTime;
             takeoffInit = true;
             autoTakeoffYaw = true;
+            thrust[0] = 500;
+            thrust[1] = 500;
         }
         if (currentTime - takeoffTime >= 1.0f)
         {
@@ -118,7 +120,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 58);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 55);
     sideForcePlate = ServoReverse(rudderAngle);
 
     // auto roll
@@ -127,11 +129,11 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         leftAileronAngle = 90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef));
         if (leftAileronAngle <= 0)
         {
-          leftAileronAngle = 0;
+            leftAileronAngle = 0;
         }
         if (leftAileronAngle >= 180)
         {
-          leftAileronAngle = 180;
+            leftAileronAngle = 180;
         }
         leftAileronAngle = ServoReverse(leftAileronAngle);
         rightAileronAngle = leftAileronAngle;
@@ -195,17 +197,20 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         Serial.println("Sbus error.");
         return;
     }
-    // allocate result to thrust
-    thrust[0] = sbus->GetCh(2);
-    // left thrust = right thrust (SET DIFFERENT IF NEED)
-    thrust[1] = thrust[0];
-    // output to motor
+    if (!takeoff)
+    {
+        // allocate result to thrust
+        thrust[0] = sbus->GetCh(2);
+        // left thrust = right thrust (SET DIFFERENT IF NEED)
+        thrust[1] = thrust[0];
+        // output to motor
+    }
 
     // take-off
     if (idle)
     {
-        thrust[0] = 690;
-        thrust[1] = 690;
+        thrust[0] = 450;
+        thrust[1] = 450;
         takeoffPressure = brm->GetPressure();
         // set to prev pressure when barometer data wrong
         if (takeoffPressure > 950.0f && takeoffPressure < 1100.0f)
@@ -219,8 +224,11 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     }
     else if (takeoff)
     {
-        thrust[0] = 1200;
-        thrust[1] = 1200;
+        if (thrust[0] < 1300)
+        {
+            thrust[0] += 100;
+        }
+        thrust[1] = thrust[0];
     }
     else if (cruise)
     {
@@ -236,10 +244,14 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
             fixedPressure = prevPressure;
             pressure_diff = 0.0f;
         }
-        
+
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
         thrust[0] = thrust[0] - THU_KP * (altitude + 6.0f * pressure_diff - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
-        //thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
+        // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
+        if (thrust[0] > 1150)
+        {
+            thrust[0] = 1150;
+        }
         thrust[1] = thrust[0];
     }
 
