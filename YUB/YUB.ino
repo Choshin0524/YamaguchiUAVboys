@@ -52,30 +52,19 @@ void loop(void)
   // Ros Serial Receive
   if (RosSerial.available() > 0)
   {
-    char incomingByte;
-    while (incomingByte != '\n')
-    {
-      incomingByte = RosSerial.read();
-      receivedData += incomingByte;
-    }
-    if (receivedData.toFloat() > -100.0f) // if altitude ok
-    {
-    altitude = receivedData.toFloat();
-    }
-    //Serial.print("Received altitude: ");
-    //Serial.println(altitude);
-    receivedData = "";
+    ifInRegion = RosSerial.read();
+    yield();
   }
   if (ifInRegion == 1)
   {
     // Serial.println("In Region!");
     ctl->ActiveAutoYaw(true);
   }
-  else
-  {
-    // Serial.println("NOT In Region!");
-    ctl->ActiveAutoYaw(false);
-  }
+  // else
+  // {
+  //   // Serial.println("NOT In Region!");
+  //   ctl->ActiveAutoYaw(false);
+  // }
   sensor->SensorRead();
   brm->BarometerRead();
   sensor->DataMonitor(false);

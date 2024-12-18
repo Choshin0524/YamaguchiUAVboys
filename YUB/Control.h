@@ -12,7 +12,7 @@
 #define THU_RUD_KP 5.0f
 #define ELE_KP 2.5f
 #define RUD_KP 0.4f
-#define THU_KP 150.0f
+#define THU_KP 500.0f
 class Control
 {
 public:

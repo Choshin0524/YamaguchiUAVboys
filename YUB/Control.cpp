@@ -120,7 +120,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 55);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 58);
     sideForcePlate = ServoReverse(rudderAngle);
 
     // auto roll
@@ -166,6 +166,13 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         }
         sideForcePlate = ServoReverse(rudderAngle);
     }
+
+    if (IfRosTrue)
+    {
+        rudderAngle = 122;
+        sideForcePlate = ServoReverse(rudderAngle);
+    }
+    
 
     // allocate result to servo output
     servoOutput[0] = leftAileronAngle;
@@ -245,9 +252,9 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
             pressure_diff = 0.0f;
         }
 
-        // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
-        thrust[0] = thrust[0] - THU_KP * (altitude + 6.0f * pressure_diff - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
-        // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
+        //fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
+        //thrust[0] = thrust[0] - THU_KP * (altitude + 6.0f * pressure_diff - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
+        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
         if (thrust[0] > 1150)
         {
             thrust[0] = 1150;
