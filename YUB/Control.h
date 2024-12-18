@@ -12,7 +12,7 @@
 #define THU_RUD_KP 5.0f
 #define ELE_KP 2.0f
 #define RUD_KP 0.5f
-#define THU_KP 500.0f
+#define THU_KP 120.0f
 class Control
 {
 public:
@@ -69,7 +69,11 @@ private:
     float takeoffTime;
     float takeoffPressure;
     float prevPressure;
+    float pressure_diff;
     
+    //auto altitude
+    float altitudeRef;
+
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
     float pitchAngleRef;

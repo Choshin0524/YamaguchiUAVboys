@@ -17,10 +17,14 @@ Control::Control()
     takeoff = false;
     takeoffInit = false;
     cruise = false;
+
+    altitudeRef = 2.5f;
+
     currentTime = 0.0f;
     takeoffTime = 0.0f;
     takeoffPressure = 0.0f;
     prevPressure = 1000.0f;
+    pressure_diff = 0.0f;
 }
 
 void Control::Initialize()
@@ -224,14 +228,18 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         // set to prev pressure when barometer data wrong
         if (fixedPressure > 950.0f && fixedPressure < 1100.0f)
         {
+            pressure_diff = -(fixedPressure - prevPressure);
             prevPressure = fixedPressure;
         }
         else
         {
             fixedPressure = prevPressure;
+            pressure_diff = 0.0f;
         }
+        
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
-        thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
+        thrust[0] = thrust[0] - THU_KP * (altitude + 6.0f * pressure_diff - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
+        //thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
         thrust[1] = thrust[0];
     }
 
