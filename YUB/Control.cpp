@@ -19,12 +19,15 @@ Control::Control()
     cruise = false;
 
     altitudeRef = 3.0f;
+    fixedAltitude = 0.0f;
 
     currentTime = 0.0f;
     takeoffTime = 0.0f;
     takeoffPressure = 0.0f;
     prevPressure = 1000.0f;
     pressure_diff = 0.0f;
+    pressureFixCount = 0;
+    pressureFixSum = 0.0f;
 }
 
 void Control::Initialize()
@@ -190,23 +193,17 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
 
 void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
 {
-    ROSaltitude = altitude;
-
-    if (sbus == nullptr)
+    ROSaltitude = altitude; // write altitude argument to member variable
+    if (sbus == nullptr)    // check null pointer
     {
         Serial.println("Sbus error.");
         return;
     }
-    if (!takeoff)
+    if (!takeoff)           // not reading from sbus when take off phase
     {
-        // allocate result to thrust
         thrust[0] = sbus->GetCh(2);
-        // left thrust = right thrust (SET DIFFERENT IF NEED)
         thrust[1] = thrust[0];
-        // output to motor
     }
-
-    // take-off
     if (idle)
     {
         thrust[0] = 450;
@@ -226,14 +223,19 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     {
         if (thrust[0] < 1300)
         {
-            thrust[0] += 100;
+            thrust[0] += 100; // gradually increase thrust to prevent motor shutdown
         }
         thrust[1] = thrust[0];
     }
     else if (cruise)
     {
         float fixedPressure = brm->GetPressure();
-        // set to prev pressure when barometer data wrong
+
+        if (pressureFixCount > 4)
+        {
+            pressureFixSum = 0.0f; // reset pressure diff sum
+            pressureFixCount = 0;  // reset count
+        }
         if (fixedPressure > 950.0f && fixedPressure < 1100.0f)
         {
             pressure_diff = -(fixedPressure - prevPressure);
@@ -241,12 +243,14 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         }
         else
         {
-            fixedPressure = prevPressure;
+            fixedPressure = prevPressure; // set to prev pressure when barometer data wrong
             pressure_diff = 0.0f;
         }
-
+        pressureFixSum += pressure_diff;
+        pressureFixCount++;
+        fixedAltitude = ROSaltitude + 6.0f * pressureFixSum;
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
-        thrust[0] = thrust[0] - THU_KP * (altitude + 6.0f * pressure_diff - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
+        thrust[0] = thrust[0] - THU_KP * (fixedAltitude - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
         // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
         if (thrust[0] > 1150)
         {
@@ -339,6 +343,8 @@ void Control::DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSe
     sdc->WriteData(file, IfRosTrue);
     sdc->Write(file, ",");
     sdc->WriteData(file, ROSaltitude);
+    sdc->Write(file, ",");
+    sdc->WriteData(file, pressureFixSum);
     sdc->Write(file, "\n");
 }
 

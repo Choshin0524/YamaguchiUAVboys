@@ -17,13 +17,14 @@ class Control
 {
 public:
     Control();
-    void Initialize();                            // set motor output pin & initialize ESC
-    void MainControl(Sbus *sbus, Sensor *sensor); // control servo motors
-    void MotorControl(Sbus *sbus, Barometer *brm, float altitude);                // control thrust
-    void MotorShutdown();                         // shutdown motor when no sbus input
-    void DataMonitor(bool ifCheck) const;
-    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec);
-    void ActiveAutoYaw(bool ifActive);
+    void Initialize();                                                         // set motor output pin & initialize ESC
+    void MainControl(Sbus *sbus, Sensor *sensor);                              // control servo motors
+    void MotorControl(Sbus *sbus, Barometer *brm, float altitude);             // control thrust
+    void MotorShutdown();                                                      // shutdown motor when no sbus input
+    void DataMonitor(bool ifCheck) const;                                      // check ctl data
+    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec); // output to sdcard
+    void ActiveAutoYaw(bool ifActive);                                         // for mode change
+
 private:
     Servo servoObj[SERVO_INDEX];
     uint8_t servoOutputPin[SERVO_INDEX];
@@ -60,6 +61,7 @@ private:
     // ros receive test
     bool IfRosTrue;
     float ROSaltitude;
+    float fixedAltitude;
     // take-off phase
     bool idle;
     bool takeoff;
@@ -70,10 +72,12 @@ private:
     float takeoffPressure;
     float prevPressure;
     float pressure_diff;
-    
-    //auto altitude
-    float altitudeRef;
 
+    // auto altitude
+    float altitudeRef;
+    int pressureFixCount;
+    float pressureFixSum;
+    
     // auto roll,pitch target angle default->0 deg
     float rollAngleRef;
     float pitchAngleRef;
