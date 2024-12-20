@@ -121,7 +121,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
     rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 58);
-    sideForcePlate = ServoReverse(rudderAngle);
+    sideForcePlate = rudderAngle;
 
     // auto roll
     if (autoRoll)
@@ -164,13 +164,13 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         {
             rudderAngle = 140;
         }
-        sideForcePlate = ServoReverse(rudderAngle);
+        sideForcePlate = rudderAngle;
     }
 
     if (IfRosTrue)
     {
         rudderAngle = 122;
-        sideForcePlate = ServoReverse(rudderAngle);
+        sideForcePlate = rudderAngle;
     }
     
 
@@ -231,7 +231,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     }
     else if (takeoff)
     {
-        if (thrust[0] < 1300)
+        if (thrust[0] < 1500)
         {
             thrust[0] += 100;
         }
