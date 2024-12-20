@@ -18,7 +18,7 @@ Control::Control()
     takeoffInit = false;
     cruise = false;
 
-    altitudeRef = 3.0f;
+    altitudeRef = 3.5f;
     fixedAltitude = 0.0f;
 
     currentTime = 0.0f;
@@ -123,8 +123,8 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 55);
-    sideForcePlate = ServoReverse(rudderAngle);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 60);
+    sideForcePlate = rudderAngle;
 
     // auto roll
     if (autoRoll)
@@ -167,7 +167,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
         {
             rudderAngle = 140;
         }
-        sideForcePlate = ServoReverse(rudderAngle);
+        sideForcePlate = rudderAngle;
     }
 
     // allocate result to servo output
@@ -221,7 +221,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     }
     else if (takeoff)
     {
-        if (thrust[0] < 1300)
+        if (thrust[0] < 1400)
         {
             thrust[0] += 100; // gradually increase thrust to prevent motor shutdown
         }
