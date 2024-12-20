@@ -231,7 +231,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     }
     else if (takeoff)
     {
-        if (thrust[0] < 1500)
+        if (thrust[0] < 1600)
         {
             thrust[0] += 100;
         }

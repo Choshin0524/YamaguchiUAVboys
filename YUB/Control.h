@@ -10,7 +10,7 @@
 #define ESC_INDEX 2
 #define ALI_KP 2.5f
 #define THU_RUD_KP 5.0f
-#define ELE_KP 2.5f
+#define ELE_KP 3.0f
 #define RUD_KP 0.4f
 #define THU_KP 500.0f
 class Control
