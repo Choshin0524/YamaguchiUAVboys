@@ -108,7 +108,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
             thrust[0] = 500;
             thrust[1] = 500;
         }
-        if (currentTime - takeoffTime >= 1.0f)
+        if (currentTime - takeoffTime >= 2.0f) //take off thrust time
         {
             takeoff = false;
             cruise = true;
@@ -130,13 +130,13 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     if (autoRoll)
     {
         leftAileronAngle = 90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef));
-        if (leftAileronAngle <= 0)
+        if (leftAileronAngle <= 40)
         {
-            leftAileronAngle = 0;
+            leftAileronAngle = 40;
         }
-        if (leftAileronAngle >= 180)
+        if (leftAileronAngle >= 140)
         {
-            leftAileronAngle = 180;
+            leftAileronAngle = 140;
         }
         leftAileronAngle = ServoReverse(leftAileronAngle);
         rightAileronAngle = leftAileronAngle;
@@ -221,7 +221,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     }
     else if (takeoff)
     {
-        if (thrust[0] < 1500)
+        if (thrust[0] < 1400)
         {
             thrust[0] += 100; // gradually increase thrust to prevent motor shutdown
         }
@@ -231,7 +231,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     {
         float fixedPressure = brm->GetPressure();
 
-        if (pressureFixCount > 4)
+        if (pressureFixCount > 3)
         {
             pressureFixSum = 0.0f; // reset pressure diff sum
             pressureFixCount = 0;  // reset count
@@ -248,13 +248,13 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         }
         pressureFixSum += pressure_diff;
         pressureFixCount++;
-        fixedAltitude = ROSaltitude + 6.0f * pressureFixSum;
+        fixedAltitude = ROSaltitude + 10.0f * pressureFixSum;
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
         thrust[0] = thrust[0] - THU_KP * (fixedAltitude - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
         // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
-        if (thrust[0] > 1300)
+        if (thrust[0] > 1220)
         {
-            thrust[0] = 1300;
+            thrust[0] = 1220;
         }
         thrust[1] = thrust[0];
     }
