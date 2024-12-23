@@ -18,7 +18,7 @@ Control::Control()
     takeoffInit = false;
     cruise = false;
 
-    altitudeRef = 3.5f;
+    altitudeRef = 3.0f;
     fixedAltitude = 0.0f;
 
     currentTime = 0.0f;
@@ -221,7 +221,7 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
     }
     else if (takeoff)
     {
-        if (thrust[0] < 1400)
+        if (thrust[0] < 1500)
         {
             thrust[0] += 100; // gradually increase thrust to prevent motor shutdown
         }
@@ -252,9 +252,9 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
         thrust[0] = thrust[0] - THU_KP * (fixedAltitude - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
         // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
-        if (thrust[0] > 1150)
+        if (thrust[0] > 1300)
         {
-            thrust[0] = 1150;
+            thrust[0] = 1300;
         }
         thrust[1] = thrust[0];
     }
