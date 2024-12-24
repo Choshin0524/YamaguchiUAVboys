@@ -91,10 +91,10 @@ void loop(void)
     currentSecond = (float)currentMillis / 1000;
     if (sbus->GetCh(7) == 1696)
     {
-      File file1 = SD.open("/flightDataRPY.txt", FILE_APPEND);
+      File file1 = SD.open("/flightDataRPYY.txt", FILE_APPEND);
       sensor->DataSDCardOutput(sdc, file1, currentSecond, brm->GetPressure());
       file1.close();
-      File file2 = SD.open("/flightDataCTL.txt", FILE_APPEND);
+      File file2 = SD.open("/flightDataCTLY.txt", FILE_APPEND);
       ctl->DataSDCardOutput(sdc, file2, currentSecond);
       file2.close();
     }

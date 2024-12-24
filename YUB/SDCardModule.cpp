@@ -15,8 +15,8 @@ void SDCardModule::SDCardInitialize(const char *message)
     {
         Serial.println("Card OK!");
     }
-    File file1 = SD.open("/flightDataRPY.txt", FILE_APPEND);
-    File file2 = SD.open("/flightDataCTL.txt", FILE_APPEND);
+    File file1 = SD.open("/flightDataRPYY.txt", FILE_APPEND);
+    File file2 = SD.open("/flightDataCTLY.txt", FILE_APPEND);
     if (!file1 || !file2)
     {
         Serial.println("Failed to open file for appending");

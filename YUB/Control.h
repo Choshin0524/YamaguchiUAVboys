@@ -9,7 +9,8 @@
 #define SERVO_INDEX 5
 #define ESC_INDEX 2
 #define ALI_KP 2.5f
-#define THU_RUD_KP 7.0f
+#define THU_RUD_KP_L 7.5f
+#define THU_RUD_KP_R 5.5f
 #define ELE_KP 3.0f
 #define RUD_KP 0.4f
 #define THU_KP 80.0f

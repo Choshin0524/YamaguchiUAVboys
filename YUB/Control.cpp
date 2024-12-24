@@ -40,8 +40,8 @@ void Control::Initialize()
     servoOutputPin[4] = 33; // side-force Plate
 
     // set brushless motor output pin
-    ESCOutputPin[0] = 14;
-    ESCOutputPin[1] = 12;
+    ESCOutputPin[0] = 14; //right motor
+    ESCOutputPin[1] = 12; //left motor
 
     // set esc min/max pulse width
     for (int i = 0; i < ESC_INDEX; i++)
@@ -123,7 +123,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     leftAileronAngle = ServoReverse(ServoMap(sbus->GetCh(0), 1696, 352, 0));
     rightAileronAngle = leftAileronAngle;
     elevatorAngle = ServoMap(sbus->GetCh(1), 1696, 352, 70);
-    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 60);
+    rudderAngle = ServoMap(sbus->GetCh(3), 1696, 352, 58);
     sideForcePlate = rudderAngle;
 
     // auto roll
@@ -250,13 +250,18 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         pressureFixCount++;
         fixedAltitude = ROSaltitude + 10.0f * pressureFixSum;
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
-        thrust[0] = thrust[0] - THU_KP * (fixedAltitude - altitudeRef) + THU_RUD_KP * abs(90 - rudderAngle);
+        thrust[0] = thrust[0] - THU_KP * (fixedAltitude - altitudeRef);
         // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
+        thrust[0] += THU_RUD_KP_R * abs(90 - rudderAngle);
+        thrust[1] += THU_RUD_KP_L * abs(90 - rudderAngle);
         if (thrust[0] > 1250)
         {
             thrust[0] = 1250;
         }
-        thrust[1] = thrust[0];
+        if (thrust[1] > 1250)
+        {
+            thrust[1] = 1250;
+        }
     }
 
     for (int i = 0; i < ESC_INDEX; i++)
