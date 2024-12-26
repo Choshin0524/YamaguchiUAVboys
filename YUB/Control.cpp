@@ -252,15 +252,16 @@ void Control::MotorControl(Sbus *sbus, Barometer *brm, float altitude)
         // fixedPressure = fixedPressure - (-1.38 * 800 * pow(10, -4) + 4.4 * pow(800, 2) * pow(10, -7) - 1.3 * pow(800, 3) * pow(10, -10));
         thrust[0] = thrust[0] - THU_KP * (fixedAltitude - altitudeRef);
         // thrust[0] = thrust[0] + THU_KP * (fixedPressure - (takeoffPressure + 0.08 - 0.27)) + THU_RUD_KP * abs(90 - rudderAngle);
+        thrust[1] = thrust[0];
         thrust[0] += THU_RUD_KP_R * abs(90 - rudderAngle);
         thrust[1] += THU_RUD_KP_L * abs(90 - rudderAngle);
-        if (thrust[0] > 1250)
+        if (thrust[0] > 1180)
         {
-            thrust[0] = 1250;
+            thrust[0] = 1180;
         }
-        if (thrust[1] > 1250)
+        if (thrust[1] > 1180)
         {
-            thrust[1] = 1250;
+            thrust[1] = 1180;
         }
     }
 
