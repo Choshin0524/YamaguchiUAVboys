@@ -5,9 +5,6 @@
 
 Control::Control()
 {
-    rollAngleRef = 0.0f;
-    pitchAngleRef = -20.0f;
-    yawRateRef = 0.0f;
     autoRoll = false;
     autoPitch = false;
     autoTakeoffYaw = false;
@@ -129,7 +126,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     // auto roll
     if (autoRoll)
     {
-        leftAileronAngle = 90 - (ALI_KP * (sensor->GetRoll() - rollAngleRef));
+        leftAileronAngle = 90 - (ALI_KP * (sensor->GetRoll() - ROLL_ANGLE_REF));
         if (leftAileronAngle <= 40)
         {
             leftAileronAngle = 40;
@@ -144,7 +141,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
     // auto pitch
     if (autoPitch)
     {
-        elevatorAngle = (90 - (ELE_KP * (sensor->GetPitch() - pitchAngleRef)));
+        elevatorAngle = (90 - (ELE_KP * (sensor->GetPitch() - PITCH_ANGLE_REF)));
         if (elevatorAngle <= 30)
         {
             elevatorAngle = 30;
@@ -158,7 +155,7 @@ void Control::MainControl(Sbus *sbus, Sensor *sensor)
 
     if (autoTakeoffYaw)
     {
-        rudderAngle = (90 + (RUD_KP * (sensor->GetYawGyro() - yawRateRef)));
+        rudderAngle = (90 + (RUD_KP * (sensor->GetYawGyro() - YAW_RATE_REF)));
         if (rudderAngle <= 40)
         {
             rudderAngle = 40;

@@ -1,3 +1,4 @@
+/*ESP32に書き出す時，気圧計を抜くこと*/
 #include <math.h>
 #include "Sbus.h"
 #include "Control.h"
@@ -7,22 +8,22 @@
 #include "SD.h"
 #include "FS.h"
 #include "SoftwareSerial.h"
-// HardwareSerial Initialize
-// Sbus 352-1024-1696
-HardwareSerial SbusSerial(2);
 
-Sensor *sensor = new Sensor();
-Barometer *brm = new Barometer();
+#define SENSOR_MONITOR_CHECK 0
+#define BAROMETER_MONITOR_CHECK 0
+#define SBUS_MONITOR_CHECK 0
+#define CONTROL_MONITOR_CHECK 0
+#define IF_USE_ROS 0
+// create instances
+HardwareSerial SbusSerial(2);           // for Sbus serial
+Sensor *sensor = new Sensor();          // BNO055
+Barometer *brm = new Barometer();       // Barometer DPS310
 Sbus *sbus = new Sbus();                // futaba receiver
 Control *ctl = new Control();           // motor output
 SDCardModule *sdc = new SDCardModule(); // SDcard module
-
-// ESC initialize flag
-bool Initialized = false; // motor output initialize
-byte ifInRegion = 0;
-unsigned long currentMillis = 0;
+// for time counter
 float currentSecond = 0.0f;
-
+// ROS
 HardwareSerial RosSerial(1);
 String receivedData;
 float altitude = 0.0f;
@@ -34,24 +35,18 @@ void setup(void)
   Serial.begin(115200);
   pinMode(21, INPUT_PULLUP); // SDA PULLUP
   pinMode(22, INPUT_PULLUP); // SCL PULLUP
+  sensor->SensorInitialize();
+  sensor->SensorCalibration();
+  brm->BarometerInitialize();
+  sdc->SDCardInitialize("Starting...\n");
+  ctl->Initialize();
+  Serial.println("Main motor initialized.");
 }
 
 void loop(void)
 {
-  if (!Initialized)
-  {
-    sensor->SensorInitialize();
-    sensor->SensorCalibration();
-    brm->BarometerInitialize();
-    sdc->SDCardInitialize("Starting...\n");
-    ctl->Initialize();
-    Initialized = true;
-    Serial.println("Main motor initialized.");
-  }
-
-
-  // Ros Serial Receive
-  if (RosSerial.available() > 0)
+  // Ros Serial Receive for AUTO ALTITUDE
+  if (RosSerial.available() > 0 && IF_USE_ROS)
   {
     char incomingByte;
     while (incomingByte != '\n')
@@ -61,46 +56,38 @@ void loop(void)
     }
     if (receivedData.toFloat() > -100.0f) // if altitude ok
     {
-    altitude = receivedData.toFloat();
+      altitude = receivedData.toFloat();
     }
-    //Serial.print("Received altitude: ");
-    //Serial.println(altitude);
     receivedData = "";
   }
-  if (ifInRegion == 1)
-  {
-    // Serial.println("In Region!");
-    ctl->ActiveAutoYaw(true);
-  }
-  else
-  {
-    // Serial.println("NOT In Region!");
-    ctl->ActiveAutoYaw(false);
-  }
+
+  // BNO055 READ
   sensor->SensorRead();
+  sensor->DataMonitor(SENSOR_MONITOR_CHECK);
+  // Barometer DPS310 READ
   brm->BarometerRead();
-  sensor->DataMonitor(false);
-  brm->DataMonitor(false);
+  brm->DataMonitor(BAROMETER_MONITOR_CHECK);
+
+  // MAIN CONTROL
   if (sbus->SbusRead(SbusSerial))
   {
-    sbus->DataMonitor(false);
-    ctl->DataMonitor(true);
+    sbus->DataMonitor(SBUS_MONITOR_CHECK);
+    ctl->DataMonitor(CONTROL_MONITOR_CHECK);
     ctl->MainControl(sbus, sensor);
     ctl->MotorControl(sbus, brm, -altitude);
-    currentMillis = millis();
-    currentSecond = (float)currentMillis / 1000;
+    currentSecond = (float)millis() / 1000;
     if (sbus->GetCh(7) == 1696)
     {
-      File file1 = SD.open("/flightDataRPYY.txt", FILE_APPEND);
+      File file1 = SD.open("/flightDataRPY.txt", FILE_APPEND);
       sensor->DataSDCardOutput(sdc, file1, currentSecond, brm->GetPressure());
       file1.close();
-      File file2 = SD.open("/flightDataCTLY.txt", FILE_APPEND);
+      File file2 = SD.open("/flightDataCTL.txt", FILE_APPEND);
       ctl->DataSDCardOutput(sdc, file2, currentSecond);
       file2.close();
     }
   }
   else
   {
-    ctl->MotorShutdown(); // shut down motor when no sbus input
+    ctl->MotorShutdown(); // shut down motor when no sbus input **NO WORKING NOW**
   }
 }

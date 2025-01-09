@@ -27,13 +27,7 @@ void Sensor::SensorInitialize()
 
 void Sensor::SensorCalibration()
 {
-    /*roll_co, pitch_co, yaw_co = 0.0f;
-    for (int i = 0; i < 10; i++)
-    {
-        SensorRead();
-        delay(50);
-    }
-    yaw_co = yaw;*/
+
 }
 
 void Sensor::SensorRead()

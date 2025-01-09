@@ -6,14 +6,22 @@
 #include "Sensor.h"
 #include "Barometer.h"
 
-#define SERVO_INDEX 5
-#define ESC_INDEX 2
-#define ALI_KP 2.5f
+#define SERVO_INDEX 5 // Servo motor num
+#define ESC_INDEX 2   // brushless motor num
+
+// AUTO THRUST PARAM
 #define THU_RUD_KP_L 7.5f
 #define THU_RUD_KP_R 5.5f
-#define ELE_KP 3.0f
-#define RUD_KP 0.4f
 #define THU_KP 80.0f
+// AUTO ROLL PARAM
+#define ROLL_ANGLE_REF 0.0f
+#define ALI_KP 2.5f
+// AUTO PITCH PARAM
+#define PITCH_ANGLE_REF -20.0f
+#define ELE_KP 3.0f
+// AUTO YAW RATE PARAM
+#define YAW_RATE_REF 0.0f
+#define RUD_KP 0.4f
 class Control
 {
 public:
@@ -23,8 +31,8 @@ public:
     void MotorControl(Sbus *sbus, Barometer *brm, float altitude);             // control thrust
     void MotorShutdown();                                                      // shutdown motor when no sbus input
     void DataMonitor(bool ifCheck) const;                                      // check ctl data
-    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec); // output to sdcard
-    void ActiveAutoYaw(bool ifActive);                                         // for mode change
+    void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec); // output to sd card
+    void ActiveAutoYaw(bool ifActive);                                         // for mode change(region)
 
 private:
     Servo servoObj[SERVO_INDEX];
@@ -35,23 +43,17 @@ private:
     uint8_t ESCOutputPin[ESC_INDEX];
 
 private:
-    // int16_t ---> 16bits  int
-    // left aileron control range: 0 - 180, flat: 90 CH1
+    // left aileron control range: 0 - 180, flat: 90 
     int leftAileronAngle;
-
-    // right aileron control range: 0 - 180, flat: 90 CH1
+    // right aileron control range: 0 - 180, flat: 90 
     int rightAileronAngle;
-
-    // elevator control range: 0 - 180, flat: 90 CH2
+    // elevator control range: 0 - 180, flat: 90 
     int elevatorAngle;
-
-    // left+right throttle control range: 0 - 100, max power: 100 CH3
+    // left+right throttle control range: 352-1696, max power: 1696 
     uint16_t thrust[2];
-
     // side-force Plate control CH4
     uint16_t sideForcePlate;
-
-    // rudder control range: 0 - 180, flat: 90 CH5
+    // rudder control range: 0 - 180, flat: 90 
     uint16_t rudderAngle;
 
     // auto roll,pitch checker
@@ -59,11 +61,11 @@ private:
     bool autoPitch;
     bool autoTakeoffYaw;
 
-    // ros receive test
+    // ros receive
     bool IfRosTrue;
     float ROSaltitude;
     float fixedAltitude;
-    // take-off phase
+    // auto thrust param
     bool idle;
     bool takeoff;
     bool takeoffInit;
@@ -78,11 +80,6 @@ private:
     float altitudeRef;
     int pressureFixCount;
     float pressureFixSum;
-    
-    // auto roll,pitch target angle default->0 deg
-    float rollAngleRef;
-    float pitchAngleRef;
-    float yawRateRef;
 };
 
 #endif

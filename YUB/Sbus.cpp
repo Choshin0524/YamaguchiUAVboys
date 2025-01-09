@@ -20,7 +20,7 @@ bool Sbus::SbusRead(HardwareSerial &uart)
         }
     }
 
-    //  buffer にデータ格納
+    //  buffer data read
     unsigned int bufferPos = 1;
     while (uart.available())
     {

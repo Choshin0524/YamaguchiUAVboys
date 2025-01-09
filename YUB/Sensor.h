@@ -24,8 +24,7 @@ public:
     float GetRoll() const;            // to get roll value
     float GetPitch() const;           // to get pitch value
     float GetYaw() const;             // to get yaw value
-
-    float GetYawGyro() const;
+    float GetYawGyro() const;         // to get yaw rate value
 
     void DataMonitor(bool ifCheck) const;
     void DataSDCardOutput(SDCardModule *sdc, File &file, const float &CurSec, const float &pressure);
